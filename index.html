@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Card Keeper</title>
+		<meta name="description" content="An app for storing your loyalty and membership cards so you can always have them with you.">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- TODO: Logos -->
+		<!-- TODO: Theme Color -->
+		
+		<base href="/">
+
+		<script type="module" src="js/index.mjs"></script>
+	</head>
+	<body>
+		<header>
+			<h1>Card Keeper</h1>
+		</header>
+		<main>
+			<p>
+				Keep all your membership cards in one place. Store your cards
+			</p>
+			<ul>
+				<li>Local coffee shop</li>
+				<li>Gym</li>
+				<li>Library</li>
+				<li>Supermarket Rewards</li>
+			</ul>
+
+			<!-- TODO list cards -->
+
+			<button>Scan my first card</button>
+			<p>(Will require camera access)</p>
+		</main>
+		<template id="scanning">
+			<button>&lt; Back</button>
+			<button>sc</button>
+			<canvas></canvas>
+			<p>Place the barcode in front of the camera</p>
+		</template>
+		<template id="card-edit">
+			<!--TODO-->
+		</template>
+		<template id="card-view">
+			<!--TODO-->
+		</template>
+	</body>
+</html>
