@@ -36,27 +36,12 @@ async function card_keeper() {
 		const stream = await t_camera_perm;
 		const video = document.createElement('video');
 		video.srcObject = stream;
+		await video.play();
 	
 		if (!('BarcodeDetector' in window)) {
 			throw new Error("BarcodeDetector unsupported");
 		}
-		const detector = new BarcodeDetector({
-			formats: [
-				'aztec',
-				'code_128',
-				'code_39',
-				'code_93',
-				'codabar',
-				'data_matrix',
-				'ean_13',
-				'ean_8',
-				'itf',
-				'pdf417',
-				'qr_code',
-				'upc_a',
-				'upc_e'
-			]
-		})
+		const detector = new BarcodeDetector();
 		
 		// Set the camera's properties (width / height) to the canvas
 		// MAYBE: Get the width / height from the video element?
@@ -74,14 +59,18 @@ async function card_keeper() {
 		let barcode;
 		while (!barcode) {
 			ctx.drawImage(video, 0, 0);
-			const bitmap = createImageBitmap(canvas);
+			// const bitmap = await createImageBitmap(canvas);
 	
 			// TODO: draw last_found (Would be inaccurate since it was from the last image...)
 			// TODO: Stacked canvases? One just for drawing bounding box / cornerPoints?
 	
 			try {
 				// STATE: detect
-				const barcodes = await detector.detect(bitmap);
+				// const barcodes = await detector.detect(bitmap);
+				const barcodes = await detector.detect(canvas);
+				if (barcodes.length > 0) {
+					console.log(barcodes);
+				}
 				if (barcodes.length == 1) {
 					barcode = barcodes[0];
 				} else if (barcodes.length > 1) {
@@ -90,6 +79,8 @@ async function card_keeper() {
 			} catch (e) {
 				if (e.name === 'NotSupportedError') {
 					throw new Error("Barcode Detection isn't supported");
+				} else {
+					throw e;
 				}
 			}
 		}
