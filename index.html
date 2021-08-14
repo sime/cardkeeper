@@ -14,25 +14,29 @@
 		<link rel="stylesheet" href="style/index.css">
 	</head>
 	<body>
-		<header>
-			<h1>Card Keeper</h1>
-		</header>
 		<main>
-			<p>
-				Keep all your membership cards in one place. Store your cards
-			</p>
-			<ul>
-				<li>Local coffee shop</li>
-				<li>Gym</li>
-				<li>Library</li>
-				<li>Supermarket Rewards</li>
-			</ul>
+		</main>
+		<template id="scene-home">
+			<header>
+				<h1>Card Keeper</h1>
+			</header>
+			<div id="description">
+				<p>
+					Keep all your membership cards in one place. Store your cards
+				</p>
+				<ul>
+					<li>Local coffee shop</li>
+					<li>Gym</li>
+					<li>Library</li>
+					<li>Supermarket Rewards</li>
+				</ul>
+			</div>
 
 			<!-- TODO list cards -->
 
 			<button class="add-card">Scan my first card</button>
-			<p>(Will require camera access)</p>
-		</main>
+			<p id="perm-warning">(Will require camera access)</p>
+		</template>
 		<template id="scene-card-capture">
 			<button class="back">&lt; Back</button>
 			<button>sc</button>
@@ -40,10 +44,38 @@
 			<p>Place the barcode in front of the camera</p>
 		</template>
 		<template id="scene-card-edit">
+			<h2>Edit Card</h2>
+			<form>
+				<output>[the raw value]</output>
+				<img><!-- TODO: this will be the image of the identified barcode -->
+				<label>
+					Give the card a name:<br>
+					<input name="name" type="text">
+				</label>
+				<fieldset>
+					<legend>Choose a colour</legend>
+					<label>Red<input name="color" type="radio" value="#fa5252"></label>
+					<label>Pink<input name="color" type="radio" value="#e64980"></label>
+					<label>Purple<input name="color" type="radio" value="#be4bdb"></label>
+					<label>Dark Blue<input name="color" type="radio" value="#4c6ef5"></label>
+					<label>Blue<input name="color" type="radio" value="#228be6"></label>
+					<label>Light Blue<input name="color" type="radio" value="#15aabf"></label>
+					<label>Teal<input name="color" type="radio" value="#12b886"></label>
+					<label>Light Green<input selected name="color" type="radio" value="#40c057"></label>
+				</fieldset>
+	
+				<button id="delete">Delete</button>
+				<button>Save</button>
+			</form>
 			<!--TODO-->
 		</template>
 		<template id="scene-card-view">
-			<!--TODO-->
+			<button id="back">&lt; Back</button>
+			<img><!-- TODO: this will be the generated image of the barcode -->
+			<p id="name">[card name]</p>
+			<p id="rawValue">[Raw Value]</p>
+
+			<button id="edit">Edit</button>
 		</template>
 	</body>
 </html>

@@ -5,6 +5,12 @@ export function wait_till(stamp) {
 		else resolve();
 	});
 }
+
+export function defered() {
+	let resolve;
+	const prom = new Promise(res => resolve = res);
+	return [prom, resolve];
+}
 export function* stride(arr, stride) {
 	for (let i = 0; i < arr.length; i += stride) {
 		const stop = i + stride;
