@@ -23,6 +23,9 @@
 			<header>
 				<h1>Card Keeper</h1>
 			</header>
+			<div id="card-list">
+
+			</div>
 			<div id="description">
 				<p>
 					Keep all your membership cards in one place. Store your cards
@@ -37,12 +40,12 @@
 
 			<!-- TODO list cards -->
 
-			<button class="add-card">Scan my first card</button>
+			<button class="action add-card">Scan my first card</button>
 			<p id="perm-warning">(Will require camera access)</p>
 		</template>
 		<template id="scene-card-capture">
 			<button class="back">&lt; Back</button>
-			<button>sc</button>
+			<button class="action sc">sc</button>
 			<canvas id="scanner"></canvas>
 			<p>Place the barcode in front of the camera</p>
 		</template>
@@ -67,18 +70,18 @@
 					<label>Light Green<input checked name="color" type="radio" value="#40c057"></label>
 				</fieldset>
 	
-				<button id="delete">Delete</button>
-				<button>Save</button>
+				<button class="action" id="delete">Delete</button>
+				<button class="action">Save</button>
 			</form>
 			<!--TODO-->
 		</template>
 		<template id="scene-card-view">
-			<button id="back">&lt; Back</button>
+			<button class="back" id="back">&lt; Back</button>
 			<img><!-- TODO: this will be the generated image of the barcode -->
 			<p id="name">[card name]</p>
 			<p id="rawValue">[Raw Value]</p>
 
-			<button id="edit">Edit</button>
+			<button class="action" id="edit">Edit</button>
 		</template>
 	</body>
 </html>

@@ -2,7 +2,7 @@ import { wait, defered } from './lib.mjs';
 
 const main = document.querySelector('main');
 
-function swap_scene(id, overlay = false) {
+function swap_scene(id, className = "") {
 	const template = document.getElementById('scene-' + id);
 	// Remove old contents:
 	while (main.firstChild) {
@@ -13,11 +13,7 @@ function swap_scene(id, overlay = false) {
 	main.appendChild(document.importNode(template.content, true));
 
 	// add the overlay
-	if (overlay) {
-		main.classList.add('overlay');
-	} else {
-		main.classList.remove('overlay');
-	}
+	main.className = className;
 }
 
 class Card {
@@ -46,6 +42,7 @@ class Card {
 		btn.innerText = this.name;
 		// TODO: add something that creates contrasting colors for the text.
 		btn.style.backgroundColor = this.color;
+		btn.dataset['cardid'] = this.id;
 
 		return btn;
 	}
@@ -81,7 +78,7 @@ class Card {
 }
 
 async function edit_card(card, image = false) {
-	swap_scene('card-edit', true);
+	swap_scene('card-edit');
 	const form = main.querySelector('form');
 
 	main.querySelector('input[name="name"]').value = card.name;
@@ -120,24 +117,24 @@ async function card_keeper() {
 
 		const add_card = main.querySelector('button.add-card');
 
+		const card_list = main.querySelector('#card-list');
 		const cards = Card.get_cards();
-		const [card_opened, open_card] = defered();
 		if (cards.length > 0) {
 			main.querySelector('#description').remove();
 			add_card.innerText = "Add card";
 			// TODO: Check if we have camera permission before removing the perm warning
 			main.querySelector('#perm-warning').remove();
 
+
 			// Display the cards
 			for (const card of cards) {
-				const el = card.make_card();
-				el.addEventListener('click', open_card.bind(null, card));
-				main.appendChild(el);
+				card_list.appendChild(card.make_card());
 				// TODO: handle viewing the card
 			}
 		}
 
-		const t_view_card = card_opened.then(async card => {
+		const t_view_card = wait(card_list, 'click').then(async ev => {
+			const card = new Card(ev.target.dataset['cardid']);
 			swap_scene('card-view');
 			// TODO: Generate the barcode
 			const canvas = document.createElement('canvas');
@@ -188,44 +185,77 @@ async function card_keeper() {
 			await Promise.race([t_edit_card, t_back]);
 		});
 		const t_add_card = wait(add_card, 'click').then(async _ => {
-			// Request access to the user's camera
-			const t_camera_perm = navigator.mediaDevices.getUserMedia({
-				video: { facingMode: "environment" },
-				audio: false
-			});
-		
 			// Load the capture scene
-			swap_scene('card-capture', true);
+			swap_scene('card-capture', 'backdrop');
 			// Get elements from the card_capture scene
 			const canvas = main.querySelector('canvas');
 			const back_btn = main.querySelector('button.back');
-		
-			// STATE: wait_for_camera
-			const stream = await t_camera_perm;
+			const sc_btn = main.querySelector('button.sc');
+
+			let quit = false;
+			wait(back_btn, 'click').then(_ => quit = true);
+			
+			let switch_camera = true;
+			let deviceId = '';
+
 			const video = document.createElement('video');
-			video.srcObject = stream;
-			await video.play();
 		
 			if (!('BarcodeDetector' in window)) {
 				throw new Error("BarcodeDetector unsupported");
 			}
 			const detector = new BarcodeDetector();
-			
-			// Set the camera's properties (width / height) to the canvas
-			// MAYBE: Get the width / height from the video element?
-			const vid_track = stream.getVideoTracks()[0];
-			if (!vid_track) {
-				throw new Error("No video track in the stream!");
-			}
-			const vid_settings = vid_track.getSettings();
-			canvas.width = vid_settings.width;
-			canvas.height = vid_settings.height;
 		
 			const ctx = canvas.getContext('2d');
 		
 			let last_found = [];
-			let barcode;
-			while (!barcode) {
+			let barcode, track;
+			while (!quit && !barcode) {
+				if (switch_camera) {
+					if (track) {
+						track.stop();
+					}
+					wait(sc_btn, 'click').then(_ => switch_camera = true);
+					switch_camera = false;
+
+					let video_constraints = {
+						facingMode: "environment"
+					};
+					if (deviceId) {
+						let devices = await navigator.mediaDevices.enumerateDevices();
+						devices = devices.filter(d => d.kind == 'videoinput').map(d => d.deviceId);
+						let cur_idx = devices.indexOf(deviceId);
+						let next_idx = (cur_idx + 1) % devices.length;
+						const id = devices[next_idx];
+						video_constraints = {
+							deviceId: {
+								exact: id
+							}
+						};
+					}
+
+					const stream = await navigator.mediaDevices.getUserMedia({
+						video: video_constraints,
+						audio: false
+					});
+
+					// video = document.createElement('video');
+					video.srcObject = stream;
+					await video.play();
+
+					// Set the camera's properties (width / height) to the canvas
+					// MAYBE: Get the width / height from the video element?
+					track = stream.getVideoTracks()[0];
+					deviceId = track.getSettings().deviceId;
+					console.log(deviceId);
+					if (!track) {
+						throw new Error("No video track in the stream!");
+					}
+					const vid_settings = track.getSettings();
+					canvas.width = vid_settings.width;
+					canvas.height = vid_settings.height;
+				}
+
+
 				ctx.drawImage(video, 0, 0);
 		
 				// TODO: draw last_found (Would be inaccurate since it was from the last image...)
@@ -258,14 +288,15 @@ async function card_keeper() {
 					}
 				}
 			}
-			// Create the barcode
-			const card = new Card(barcode);
-			await edit_card(card, canvas);
+			if (!quit) {
+				// Create the barcode
+				const card = new Card(barcode);
+				await edit_card(card, canvas);
+			}
 		});
 
 		// STATE: home_screen
 		await Promise.race([t_view_card, t_add_card]);
-	
 	}
 }
 try {
