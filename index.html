@@ -40,14 +40,14 @@
 		<template id="scene-card-capture">
 			<button class="back">&lt; Back</button>
 			<button>sc</button>
-			<canvas></canvas>
+			<canvas id="scanner"></canvas>
 			<p>Place the barcode in front of the camera</p>
 		</template>
 		<template id="scene-card-edit">
 			<h2>Edit Card</h2>
+			<output>[the raw value]</output>
+			<img><!-- TODO: this will be the image of the identified barcode -->
 			<form>
-				<output>[the raw value]</output>
-				<img><!-- TODO: this will be the image of the identified barcode -->
 				<label>
 					Give the card a name:<br>
 					<input name="name" type="text">
@@ -61,7 +61,7 @@
 					<label>Blue<input name="color" type="radio" value="#228be6"></label>
 					<label>Light Blue<input name="color" type="radio" value="#15aabf"></label>
 					<label>Teal<input name="color" type="radio" value="#12b886"></label>
-					<label>Light Green<input selected name="color" type="radio" value="#40c057"></label>
+					<label>Light Green<input checked name="color" type="radio" value="#40c057"></label>
 				</fieldset>
 	
 				<button id="delete">Delete</button>

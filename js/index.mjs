@@ -35,7 +35,7 @@ class Card {
 			this.format = idOrBarcode.format;
 			this.rawValue = idOrBarcode.rawValue;
 			this.name = "[new card]";
-			this.color = "ffffff";
+			this.color = false;
 			this.save();
 		} else {
 			throw "";
@@ -85,13 +85,19 @@ async function edit_card(card, image = false) {
 	const form = main.querySelector('form');
 
 	main.querySelector('input[name="name"]').value = card.name;
-	// TODO: select the color (Should use a select instead of radio?)
 
-	const img = main.querySelector('img');
-	if (!image) {
-		// TODO: generate the Barcode to display
-	} else {
-		img.src = image;
+	// TODO: Make sure this isn't an injection problem.
+	if (card.color) {
+		const col_el = main.querySelector(`input[value="${card.color}"]`);
+		if (col_el) {
+			col_el.checked = true;
+		}
+	}
+
+	main.querySelector('output').innerText = card.rawValue;
+
+	if (image !== false) {
+		main.querySelector('img').replaceWith(image);
 	}
 
 	const t_save_card = wait(form, 'submit').then(ev => {
@@ -197,6 +203,13 @@ async function card_keeper() {
 					}
 					if (barcodes.length == 1) {
 						barcode = barcodes[0];
+
+						// Crop the canvas to the bounding box of the found barcode.  We'll use this image in the edit screen.
+						const {x: sx, y: sy, width, height} = barcode.boundingBox;
+						const bitmap = await createImageBitmap(canvas, sx, sy, width, height);
+						canvas.width = width;
+						canvas.height = height;
+						ctx.drawImage(bitmap, 0, 0);
 					} else if (barcodes.length > 1) {
 						// TODO: Set last_found and skip.
 					}
@@ -210,7 +223,7 @@ async function card_keeper() {
 			}
 			// Create the barcode
 			const card = new Card(barcode);
-			await edit_card(card);
+			await edit_card(card, canvas);
 		});
 
 		// STATE: home_screen
