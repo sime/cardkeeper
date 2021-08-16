@@ -140,11 +140,48 @@ async function card_keeper() {
 		const t_view_card = card_opened.then(async card => {
 			swap_scene('card-view');
 			// TODO: Generate the barcode
+			const canvas = document.createElement('canvas');
+			// a list of formats is: https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API#supported_barcode_formats
+			const supported_barcode_formats = [
+				'code_128',
+				'code_39',
+				'ean_13',
+				'ean_8',
+				'itf',
+				'upc_a',
+				'upc_e'
+			];
+			if (supported_barcode_formats.includes(card.format)) {
+				// Convert between browser format names and JsBarcode names:
+				let format = card.format.toUpperCase();
+				format = format.replace('_', '');
+				if (format == 'ITF') {
+					format = 'ITF14'
+				} else if (format == 'UPCA') {
+					format = 'UPC';
+				}
+				JsBarcode(canvas, card.rawValue, { format });
+			} else if (card.format == "qr_code") {
+				const ctx = canvas.getContext('2d');
+				const code = qrcode(0, 'M');
+				code.addData(card.rawValue);
+				code.make();
+				const cell_size = 10;
+				canvas.width = cell_size * code.getModuleCount();
+				canvas.height = cell_size * code.getModuleCount();
+				// What should cell size be?
+				code.renderTo2dContext(ctx, cell_size);
+
+				// Use QR code generation library
+			} else {
+				throw "unsupported format";
+			}
+			main.querySelector('img').replaceWith(canvas);
 			main.querySelector('#name').innerText = card.name;
 			main.querySelector('#rawValue').innerText = card.rawValue;
 
 			const t_edit_card = wait(main.querySelector('#edit'), 'click').then(_ => 
-				edit_card(card)
+				edit_card(card, canvas)
 			);
 			const t_back = wait(main.querySelector('#back'), 'click');
 
