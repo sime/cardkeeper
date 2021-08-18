@@ -1,12 +1,17 @@
 html, body {
 	margin: 0;
 	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+h1, h2, h3, h4, h5, h6 {
+	margin: unset;
 }
 canvas {
 	box-sizing: border-box;
 	display: block;
 	max-width: 100%;
-	margin: 0 auto;
+	/* margin: 0 auto; */
 }
 #scanner {
 	border-radius: 5em;
@@ -22,6 +27,23 @@ canvas {
 	margin: 0.5em;
 	padding: 0.5em;
 	text-align: left;
+}
+main.card-edit {
+	font-size: 1.3em;
+	display: grid;
+	grid-template: repeat(4, min-content) 1fr min-content / 1fr;
+	row-gap: 1em;
+}
+.spacer {
+	flex-grow: 1 1;
+}
+.space-between {
+	display: flex;
+	justify-content: space-between;
+}
+
+form {
+	display: contents;
 }
 
 h1 {
@@ -41,18 +63,22 @@ button.back {
 }
 
 main {
-	text-align: center;
 	padding: 1em;
-	width: 100vw;
-	height: 100vh;
+	width: 100%;
+	height: 100%;
 	box-sizing: border-box;
 }
 main.backdrop {
 	background-color: #000;
 	color: #888;
 }
+h1 {
+	width: max-content;
+	margin: 0 auto;
+}
+
 button {
-	padding: .5em;
+	padding: .5em 2em;
 }
 button.action {
 	background-color: white;
@@ -62,13 +88,20 @@ button.action {
 
 /* Color picking */
 fieldset {
+	margin: unset;
+	padding: unset;
 	border: unset;
-	display: grid;
 	width: min-content;
-	margin: 0 auto;
+	/* margin: 0 auto; */
+	display: grid;
 	grid-template: 1fr / 1fr 1fr 1fr 1fr;
 }
+legend {
+	width: max-content;
+}
 input[type="radio"] {
+	margin: .2em;
+	padding: unset;
 	appearance: none;
 	width: 2em;
 	height: 2em;

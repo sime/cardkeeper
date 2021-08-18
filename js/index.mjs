@@ -13,7 +13,7 @@ function swap_scene(id, className = "") {
 	main.appendChild(document.importNode(template.content, true));
 
 	// add the overlay
-	main.className = className;
+	main.className = id + ' ' + className;
 }
 
 class Card {
@@ -91,7 +91,13 @@ async function edit_card(card, image = false) {
 		}
 	}
 
-	main.querySelector('output').innerText = card.rawValue;
+	const output = main.querySelector('output');
+	if (card.format === 'qr_code') {
+		output.innerText = card.rawValue;
+	} else {
+		// The barcodes embed the card number inside the image.
+		output.remove();
+	}
 
 	if (image !== false) {
 		main.querySelector('img').replaceWith(image);

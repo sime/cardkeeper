@@ -51,9 +51,12 @@
 		</template>
 		<template id="scene-card-edit">
 			<h2>Edit Card</h2>
-			<output>[the raw value]</output>
-			<img><!-- TODO: this will be the image of the identified barcode -->
+			<div>
+				<output>[the raw value]</output>
+				<img><!-- TODO: this will be the image of the identified barcode -->
+			</div>
 			<form>
+				
 				<label>
 					Give the card a name:<br>
 					<input name="name" type="text">
@@ -69,9 +72,13 @@
 					<input name="color" type="radio" value="#12b886">
 					<input checked name="color" type="radio" value="#40c057">
 				</fieldset>
-	
-				<button class="action" id="delete">Delete</button>
-				<button class="action">Save</button>
+
+				<div class="spacer"></div>
+				
+				<div class="space-between">
+					<button class="action" id="delete">Delete</button>
+					<button class="action">Save</button>
+				</div>
 			</form>
 			<!--TODO-->
 		</template>
