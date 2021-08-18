@@ -59,3 +59,46 @@ button.action {
 	border: 2px solid black;
 	border-radius: 0.5em;
 }
+
+/* Color picking */
+fieldset {
+	border: unset;
+	display: grid;
+	width: min-content;
+	margin: 0 auto;
+	grid-template: 1fr / 1fr 1fr 1fr 1fr;
+}
+input[type="radio"] {
+	appearance: none;
+	width: 2em;
+	height: 2em;
+	border: 1px solid #555;
+	/* background-color: attr(value color); Sad that this doesn't work */
+}
+input[type="radio"]:checked {
+	border-width: 3px;
+}
+input[value="#fa5252"] {
+	background-color: #fa5252;
+}
+input[value="#e64980"] {
+	background-color: #e64980;
+}
+input[value="#be4bdb"] {
+	background-color: #be4bdb;
+}
+input[value="#4c6ef5"] {
+	background-color: #4c6ef5;
+}
+input[value="#228be6"] {
+	background-color: #228be6;
+}
+input[value="#15aabf"] {
+	background-color: #15aabf;
+}
+input[value="#12b886"] {
+	background-color: #12b886;
+}
+input[value="#40c057"] {
+	background-color: #40c057;
+}
