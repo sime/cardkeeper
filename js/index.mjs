@@ -1,5 +1,26 @@
 import { wait, defered } from './lib.mjs';
 
+// This transition occurs when a new service worker claims the page.
+const t_sw_update = new Promise(resolve => {
+	// I sometimes use an http dev server
+	if ('serviceWorker' in navigator) {
+		// TODO: use ServiceWorkerRegistration.onupdatefound instead?
+		let last_controller = navigator.serviceWorker.controller;
+		navigator.serviceWorker.addEventListener('controllerchange', () => {
+			if (last_controller) resolve();
+			last_controller = navigator.serviceWorker.controller;
+		});
+	} else {
+		console.error("no service worker support.");
+	}
+});
+// Setup service worker
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+		navigator.serviceWorker.register('/service-worker.js');
+	});
+}
+
 const main = document.querySelector('main');
 
 function swap_scene(id, className = "") {
@@ -302,7 +323,13 @@ async function card_keeper() {
 		});
 
 		// STATE: home_screen
-		await Promise.race([t_view_card, t_add_card]);
+		let update = false;
+
+		await Promise.race([t_view_card, t_add_card, t_sw_update.then(_ => update = true)]);
+		if (update) {
+			location.reload();
+			break;
+		}
 	}
 }
 try {
