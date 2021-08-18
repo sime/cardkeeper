@@ -315,6 +315,10 @@ async function card_keeper() {
 					}
 				}
 			}
+			if (track) {
+				track.stop();
+				video.pause();
+			}
 			if (!quit) {
 				// Create the barcode
 				const card = new Card(barcode);
