@@ -22,6 +22,7 @@ self.addEventListener('install', e => e.waitUntil((async () => {
 
 		'js/index.mjs',
 		'js/lib.mjs',
+		'js/card.mjs',
 
 		// Extern libraries
 		'extern/JsBarcode.all.min.js',
