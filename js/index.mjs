@@ -44,9 +44,9 @@ try {
 // Root view
 async function card_keeper() {
 	while(true) {
-		let container_el;
+		let container_el, doohicky_el, action_el;
 		mount(html`
-	<div id="onboard-container" ${e => { container_el = e }}>
+	<div id="onboard-container" ${e => {container_el = e}}>
 		<section>
 			<img width="314" height="272" src="/assets/onboard1.svg" alt="">
 			<h1>Card Keeper</h1>
@@ -85,11 +85,88 @@ async function card_keeper() {
 				</li>
 			</ul>
 		</section>
+		<section>
+			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
+			<h1>Safe and Secure</h1>
+			<p>Protects your privacy at the same time, so you feel more secured</p>
+			<ul>
+				<li>
+					<img width="30" height="30" src="/assets/offline-icon.svg">
+					Works Offline
+				</li>
+				<li>
+					<img width="30" height="30" src="/assets/device-icon.svg">
+					All data stored in your device
+				</li>
+			</ul>
+		</section>
+		<section>
+			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
+			<h1>Safe and Secure</h1>
+			<p>Protects your privacy at the same time, so you feel more secured</p>
+			<ul>
+				<li>
+					<img width="30" height="30" src="/assets/offline-icon.svg">
+					Works Offline
+				</li>
+				<li>
+					<img width="30" height="30" src="/assets/device-icon.svg">
+					All data stored in your device
+				</li>
+			</ul>
+		</section>
+		<section>
+			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
+			<h1>Safe and Secure</h1>
+			<p>Protects your privacy at the same time, so you feel more secured</p>
+			<ul>
+				<li>
+					<img width="30" height="30" src="/assets/offline-icon.svg">
+					Works Offline
+				</li>
+				<li>
+					<img width="30" height="30" src="/assets/device-icon.svg">
+					All data stored in your device
+				</li>
+			</ul>
+		</section>
 	</div>
-	<div class="doohicky">
-		${() => Array.from(container_el.children).map(() => html`<div></div>`)}
-	</div>
-	<button>
+	<div class="doohicky" ${doohicky_el => {
+		const rider = document.createElement('div');
+		rider.className = 'rider';
+		doohicky_el.appendChild(rider);
+		const observer = new IntersectionObserver(() => {
+			const progress = container_el.scrollLeft / container_el.clientWidth;
+			rider.style.left = `${Math.round(progress) * 16}px`;
+		});
+		for (let i = 0; i <= container_el.children.length; ++i) {
+			if (i < container_el.children.length) {
+				observer.observe(container_el.children[i]);
+			}
+			doohicky_el.appendChild(document.createElement('div'));
+		}
+	}}></div>
+	<button ${btn => {
+		let next = true;
+		new IntersectionObserver(entries => {
+			for (const entry of entries) {
+				// console.log(entry);
+				if (entry.isIntersecting) {
+					btn.firstChild.data = "Scan My Card";
+				} else {
+					btn.firstChild.data = "Next";
+				}
+				next = !entry.isIntersecting;
+			}
+		}, { root: container_el }).observe(container_el.lastElementChild);
+		on('click', () => {
+			if (next) {
+				container_el.scrollLeft += container_el.clientWidth;
+			} else {
+				// Transition out of onboarding
+			}
+		})(btn);
+	}}}>
 		Next
 		<img width="28" height="28" src="/assets/button-arrow.svg">
 	</button>`);

@@ -75,6 +75,7 @@ main {
 	/* height: 100%; */
 	box-sizing: border-box;
 	flex-direction: column;
+	gap: 24px;
 }
 main.backdrop {
 	background-color: #000;
@@ -89,7 +90,7 @@ button {
 	border: none;
 	border-radius: 40px;
 	height: 60px;
-	margin: 40px;
+	margin: 0 40px;
 	padding: 16px;
 	width: unset;
 	/* max-width: unset; */
@@ -176,7 +177,8 @@ input[value="#40c057"] {
 	display: grid;
 	align-items: stretch;
 	grid-template-rows: 1fr;
-	grid-template-columns: 100% 100%;
+	grid-auto-columns: 100%;
+	grid-auto-flow: column;
 	grid-gap: 40px;
 	overflow-x: scroll;
 	/* width: 100%; */
@@ -192,6 +194,7 @@ input[value="#40c057"] {
 	scroll-snap-align: center;
 	margin: 40px;
 	margin-bottom: 0;
+	scroll-snap-stop: always;
 }
 
 .doohicky {
@@ -202,15 +205,21 @@ input[value="#40c057"] {
     gap: 4px;
 }
 
-.doohicky div {
+.doohicky div, .doohicky .rider::after {
     height: 8px;
     width: 8px;
     background-color: #c4c4c4;
     border-radius: 4px;
-    transition: width 0.5s;
 }
 
-.doohicky .active {
-    background-color: #4D94FF;
-    width: 24px;
+.doohicky .rider {
+	position: relative;
+	width: 0;
+	transition: left 0.2s;
+}
+.doohicky .rider::after {
+	content: "";
+	position: absolute;
+	background-color: #4D94FF;
+	width: 24px;
 }
