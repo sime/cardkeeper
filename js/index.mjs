@@ -1,5 +1,6 @@
 import { wait, defered } from './lib.mjs';
 import { Card } from './card.mjs';
+import { html, on } from './templating.mjs';
 
 // This transition occurs when a new service worker claims the page.
 const t_sw_update = new Promise(resolve => {
@@ -24,18 +25,12 @@ if ('serviceWorker' in navigator) {
 
 // Function to clone a template / replace the main content
 const main = document.querySelector('main');
-function swap_scene(id, className = "") {
-	const template = document.getElementById('scene-' + id);
+function mount(contents) {
 	// Remove old contents:
 	while (main.firstChild) {
 		main.firstChild.remove();
 	}
-
-	// Insert the new contents
-	main.appendChild(document.importNode(template.content, true));
-
-	// add the overlay
-	main.className = id + ' ' + className;
+	main.appendChild(contents);
 }
 
 
@@ -49,6 +44,57 @@ try {
 // Root view
 async function card_keeper() {
 	while(true) {
+		let container_el;
+		mount(html`
+	<div id="onboard-container" ${e => { container_el = e }}>
+		<section>
+			<img width="314" height="272" src="/assets/onboard1.svg" alt="">
+			<h1>Card Keeper</h1>
+			<p>Keep all your membership cards in one place. You can store your:</p>
+			<ul>
+				<li>
+					<img width="30" height="30" src="/assets/coffee-icon.svg">
+					Local Coffee Shop Card
+				</li>
+				<li>
+					<img width="30" height="30" src="/assets/gym-icon.svg">
+					Gym Card
+				</li>
+				<li>
+					<img width="30" height="30" src="/assets/library-icon.svg">
+					Library Card
+				</li>
+				<li>
+					<img width="30" height="30" src="/assets/grocery-icon.svg">
+					Supermarket Reward Card
+				</li>
+			</ul>
+		</section>
+		<section>
+			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
+			<h1>Safe and Secure</h1>
+			<p>Protects your privacy at the same time, so you feel more secured</p>
+			<ul>
+				<li>
+					<img width="30" height="30" src="/assets/offline-icon.svg">
+					Works Offline
+				</li>
+				<li>
+					<img width="30" height="30" src="/assets/device-icon.svg">
+					All data stored in your device
+				</li>
+			</ul>
+		</section>
+	</div>
+	<div class="doohicky">
+		${() => Array.from(container_el.children).map(() => html`<div></div>`)}
+	</div>
+	<button>
+		Next
+		<img width="28" height="28" src="/assets/button-arrow.svg">
+	</button>`);
+
+		await new Promise(() => {});
 		swap_scene('home');
 
 		const add_card_btn = main.querySelector('button.add-card');

@@ -1,11 +1,18 @@
+@font-face {
+	font-family: "DM Sans";
+	src: url("/assets/DMSans-Regular.ttf");
+}
 html, body {
+	font-family: "DM Sans", sans-serif;
 	margin: 0;
 	padding: 0;
 	width: 100%;
 	height: 100%;
+	font-size: 14px;
 }
 h1, h2, h3, h4, h5, h6 {
 	margin: unset;
+	text-align: center;
 }
 canvas {
 	box-sizing: border-box;
@@ -47,8 +54,7 @@ form {
 }
 
 h1 {
-	font-size: 1.5em;
-	text-decoration: underline;
+	font-size: 35px;
 }
 
 button.back {
@@ -63,27 +69,35 @@ button.back {
 }
 
 main {
-	padding: 1em;
-	width: 100%;
-	height: 100%;
+	display: flex;
+	/* padding: 40px; */
+	/* width: 100%; */
+	/* height: 100%; */
 	box-sizing: border-box;
+	flex-direction: column;
 }
 main.backdrop {
 	background-color: #000;
 	color: #888;
 }
-h1 {
-	width: max-content;
-	margin: 0 auto;
-}
 
 button {
 	padding: .5em 2em;
-}
-button.action {
-	background-color: white;
-	border: 2px solid black;
-	border-radius: 0.5em;
+	font-size: 16px;
+	background-color: black;
+	display: flex;
+	border: none;
+	border-radius: 40px;
+	height: 60px;
+	margin: 40px;
+	padding: 16px;
+	width: unset;
+	/* max-width: unset; */
+	/* display: block; */
+	color: white;
+	align-items: center;
+	justify-content: space-between;
+	font-weight: bold;
 }
 
 /* Color picking */
@@ -134,4 +148,69 @@ input[value="#12b886"] {
 }
 input[value="#40c057"] {
 	background-color: #40c057;
+}
+
+#description li {
+	/* vertical-align: middle; */
+	display: flex;
+	align-items: center;
+}
+
+#description svg {
+	margin: 8px;
+}
+
+#onboard-container li {
+	list-style: none;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-block: 8px;
+}
+
+#onboard-container ul {
+	padding: 0;
+}
+
+#onboard-container {
+	display: grid;
+	align-items: stretch;
+	grid-template-rows: 1fr;
+	grid-template-columns: 100% 100%;
+	grid-gap: 40px;
+	overflow-x: scroll;
+	/* width: 100%; */
+	scroll-snap-type: x mandatory;
+	scrollbar-color: red;
+}
+#onboard-container::-webkit-scrollbar {
+	/* Hide the scrollbar on the #onboard-container */
+	background-color: transparent;
+}
+
+#onboard-container section {
+	scroll-snap-align: center;
+	margin: 40px;
+	margin-bottom: 0;
+}
+
+.doohicky {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.doohicky div {
+    height: 8px;
+    width: 8px;
+    background-color: #c4c4c4;
+    border-radius: 4px;
+    transition: width 0.5s;
+}
+
+.doohicky .active {
+    background-color: #4D94FF;
+    width: 24px;
 }

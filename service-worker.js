@@ -17,9 +17,13 @@ self.addEventListener('install', e => e.waitUntil((async () => {
 		// 'icons/logo-opt.svg',
 		// 'icons/logo-180.png',
 
+		// Fonts
+		'assets/DMSans-Regular.ttf',
+
 		// Styles
 		'style/index.css',
 
+		// JavaScript
 		'js/index.mjs',
 		'js/lib.mjs',
 		'js/card.mjs',
