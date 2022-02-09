@@ -2,6 +2,16 @@ import create_template from './create-template.mjs';
 
 const template_cache = new WeakMap();
 
+// Function to clone a template / replace the main content
+const main = document.querySelector('main');
+export function mount(contents) {
+	// Remove old contents:
+	while (main.firstChild) {
+		main.firstChild.remove();
+	}
+	main.appendChild(contents);
+}
+
 export function html(strings, ...expressions) {
 	let template = template_cache.get(strings);
 	if (!template) {

@@ -75,7 +75,7 @@ main {
 	/* height: 100%; */
 	box-sizing: border-box;
 	flex-direction: column;
-	gap: 24px;
+	gap: 8px;
 }
 main.backdrop {
 	background-color: #000;
@@ -179,11 +179,12 @@ input[value="#40c057"] {
 	grid-template-rows: 1fr;
 	grid-auto-columns: 100%;
 	grid-auto-flow: column;
-	grid-gap: 40px;
+	/* grid-gap: 40px; */
 	overflow-x: scroll;
 	/* width: 100%; */
 	scroll-snap-type: x mandatory;
 	scrollbar-color: red;
+	scroll-behavior: smooth;
 }
 #onboard-container::-webkit-scrollbar {
 	/* Hide the scrollbar on the #onboard-container */
@@ -192,7 +193,7 @@ input[value="#40c057"] {
 
 #onboard-container section {
 	scroll-snap-align: center;
-	margin: 40px;
+	margin: 0 40px;
 	margin-bottom: 0;
 	scroll-snap-stop: always;
 }
@@ -205,21 +206,20 @@ input[value="#40c057"] {
     gap: 4px;
 }
 
-.doohicky div, .doohicky .rider::after {
+.doohicky div {
     height: 8px;
     width: 8px;
     background-color: #c4c4c4;
     border-radius: 4px;
+    transition: width 0.5s, background-color 0.25s;
 }
-
-.doohicky .rider {
-	position: relative;
-	width: 0;
-	transition: left 0.2s;
-}
-.doohicky .rider::after {
-	content: "";
-	position: absolute;
+.doohicky .active {
 	background-color: #4D94FF;
 	width: 24px;
+}
+
+p.perm-warning {
+    color: #909090;
+    visibility: hidden;
+    margin: 0 40px;
 }

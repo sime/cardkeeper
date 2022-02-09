@@ -1,6 +1,7 @@
 import { wait, defered } from './lib.mjs';
 import { Card } from './card.mjs';
-import { html, on } from './templating.mjs';
+import { mount, html, on } from './templating.mjs';
+import onboarding from './onboarding.mjs';
 
 // This transition occurs when a new service worker claims the page.
 const t_sw_update = new Promise(resolve => {
@@ -23,15 +24,7 @@ if ('serviceWorker' in navigator) {
 	});
 }
 
-// Function to clone a template / replace the main content
-const main = document.querySelector('main');
-function mount(contents) {
-	// Remove old contents:
-	while (main.firstChild) {
-		main.firstChild.remove();
-	}
-	main.appendChild(contents);
-}
+
 
 
 // Run the app:
@@ -44,212 +37,106 @@ try {
 // Root view
 async function card_keeper() {
 	while(true) {
-		let container_el, doohicky_el, action_el;
-		mount(html`
-	<div id="onboard-container" ${e => {container_el = e}}>
-		<section>
-			<img width="314" height="272" src="/assets/onboard1.svg" alt="">
-			<h1>Card Keeper</h1>
-			<p>Keep all your membership cards in one place. You can store your:</p>
-			<ul>
-				<li>
-					<img width="30" height="30" src="/assets/coffee-icon.svg">
-					Local Coffee Shop Card
-				</li>
-				<li>
-					<img width="30" height="30" src="/assets/gym-icon.svg">
-					Gym Card
-				</li>
-				<li>
-					<img width="30" height="30" src="/assets/library-icon.svg">
-					Library Card
-				</li>
-				<li>
-					<img width="30" height="30" src="/assets/grocery-icon.svg">
-					Supermarket Reward Card
-				</li>
-			</ul>
-		</section>
-		<section>
-			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
-			<h1>Safe and Secure</h1>
-			<p>Protects your privacy at the same time, so you feel more secured</p>
-			<ul>
-				<li>
-					<img width="30" height="30" src="/assets/offline-icon.svg">
-					Works Offline
-				</li>
-				<li>
-					<img width="30" height="30" src="/assets/device-icon.svg">
-					All data stored in your device
-				</li>
-			</ul>
-		</section>
-		<section>
-			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
-			<h1>Safe and Secure</h1>
-			<p>Protects your privacy at the same time, so you feel more secured</p>
-			<ul>
-				<li>
-					<img width="30" height="30" src="/assets/offline-icon.svg">
-					Works Offline
-				</li>
-				<li>
-					<img width="30" height="30" src="/assets/device-icon.svg">
-					All data stored in your device
-				</li>
-			</ul>
-		</section>
-		<section>
-			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
-			<h1>Safe and Secure</h1>
-			<p>Protects your privacy at the same time, so you feel more secured</p>
-			<ul>
-				<li>
-					<img width="30" height="30" src="/assets/offline-icon.svg">
-					Works Offline
-				</li>
-				<li>
-					<img width="30" height="30" src="/assets/device-icon.svg">
-					All data stored in your device
-				</li>
-			</ul>
-		</section>
-		<section>
-			<img width="314" height="272" src="/assets/onboard2.svg" alt="">
-			<h1>Safe and Secure</h1>
-			<p>Protects your privacy at the same time, so you feel more secured</p>
-			<ul>
-				<li>
-					<img width="30" height="30" src="/assets/offline-icon.svg">
-					Works Offline
-				</li>
-				<li>
-					<img width="30" height="30" src="/assets/device-icon.svg">
-					All data stored in your device
-				</li>
-			</ul>
-		</section>
-	</div>
-	<div class="doohicky" ${doohicky_el => {
-		const rider = document.createElement('div');
-		rider.className = 'rider';
-		doohicky_el.appendChild(rider);
-		const observer = new IntersectionObserver(() => {
-			const progress = container_el.scrollLeft / container_el.clientWidth;
-			rider.style.left = `${Math.round(progress) * 16}px`;
-		});
-		for (let i = 0; i <= container_el.children.length; ++i) {
-			if (i < container_el.children.length) {
-				observer.observe(container_el.children[i]);
-			}
-			doohicky_el.appendChild(document.createElement('div'));
-		}
-	}}></div>
-	<button ${btn => {
-		let next = true;
-		new IntersectionObserver(entries => {
-			for (const entry of entries) {
-				// console.log(entry);
-				if (entry.isIntersecting) {
-					btn.firstChild.data = "Scan My Card";
-				} else {
-					btn.firstChild.data = "Next";
-				}
-				next = !entry.isIntersecting;
-			}
-		}, { root: container_el }).observe(container_el.lastElementChild);
-		on('click', () => {
-			if (next) {
-				container_el.scrollLeft += container_el.clientWidth;
-			} else {
-				// Transition out of onboarding
-			}
-		})(btn);
-	}}}>
-		Next
-		<img width="28" height="28" src="/assets/button-arrow.svg">
-	</button>`);
-
-		await new Promise(() => {});
-		swap_scene('home');
-
-		const add_card_btn = main.querySelector('button.add-card');
-
-		const card_list = main.querySelector('#card-list');
 		const cards = Card.get_cards();
-		if (cards.length > 0) {
-			main.querySelector('#description').remove();
-			add_card_btn.innerText = "Add card";
-			// TODO: Check if we have camera permission before removing the perm warning
-			main.querySelector('#perm-warning').remove();
-
-			// Display the cards
-			for (const card of cards) {
-				card_list.appendChild(card.make_card());
-				// TODO: handle viewing the card
-			}
-		}
-
-		const t_view_card = wait(card_list, 'click').then(ev => view_card(
-			new Card(ev.target.dataset['cardid'])
-		));
-		const t_add_card = wait(add_card_btn, 'click').then(_ => add_card());
-
 		let update = false;
-		await Promise.race([t_view_card, t_add_card, t_sw_update.then(_ => update = true)]);
-		if (update) {
-			location.reload();
-			break;
+
+		if (cards.length == 0) {
+			// STATE: onboarding, TRANSITIONS: [onboarding_done]
+			await onboarding();
+
+			await add_card();
+		} else {
+			let t_add_card, t_view_card;
+			mount(html`
+				<h1>Card Keeper</h1>
+				<ul ${e => {
+					t_view_card = new Promise(resolve => {
+						on('click', ev => {
+							resolve(new Card(ev.target.dataset['cardid']));
+						}, {once: true})(e);
+					});
+				}}>
+				${cards.map(card => html`
+					<li ${e => {e.dataset['cardid'] = card.id}}>${card.name}</li>
+				`)}
+				</ul>
+				<button ${e => {
+					t_add_card = new Promise(resolve => {
+						on('click', resolve, {once: true})(e);
+					}).then(_ => add_card());
+				}}>Add Card <img width="28" height="28" src="/assets/button-plus.svg"></button>
+			`);
+
+			await Promise.race([t_view_card, t_add_card, t_sw_update.then(_ => update = true)]);
+
+			if (update) {
+				location.reload();
+				break;
+			}
 		}
 	}
 }
 
 // Edit card view
-async function edit_card(card, image = false) {
-	swap_scene('card-edit');
-	const form = main.querySelector('form');
+async function edit_card(card, image = null) {
+	let form;
+	let t_save_card, t_delete_card;
+	mount(html`
+	<h2>Edit Card</h2>
+	<div>
+		${() => {
+			if (card.format === 'qr_code') {
+				// Only output the rawvalue for qrcodes because the barcodes embed the value in their image.
+				return html`<output>${card.rawValue}</output>`;
+			}
+		}}
+		<span>${image}<span>
+	</div>
+	<form ${e => {form = e}}>
+		<label>
+			Give the card a name:<br>
+			<input name="name" type="text" ${e => {e.value = card.name}}>
+		</label>
+		<fieldset>
+			<legend>Choose a colour</legend>
+			${["#fa5252", "#e64980", "#be4bdb", "#4c6ef5", "#228be6", "#15aabf", "#12b886", "#40c057"].map(color => html`
+				<input name="color" type="radio" ${e => {
+					if (color == card.color) e.checked = true;
+					e.value = color;
+				}}>
+			`)}
+		</fieldset>
 
-	main.querySelector('input[name="name"]').value = card.name;
-
-	// TODO: Make sure this isn't an injection problem.
-	if (card.color) {
-		const col_el = main.querySelector(`input[value="${card.color}"]`);
-		if (col_el) {
-			col_el.checked = true;
-		}
-	}
-
-	const output = main.querySelector('output');
-	if (card.format === 'qr_code') {
-		output.innerText = card.rawValue;
-	} else {
-		// The barcodes embed the card number inside the image.
-		output.remove();
-	}
-
-	if (image !== false) {
-		main.querySelector('img').replaceWith(image);
-	}
-
-	const t_save_card = wait(form, 'submit').then(ev => {
-		ev.preventDefault();
-		const data = new FormData(form);
-		card.name = data.get('name');
-		card.color = data.get('color');
-		card.save();
-	});
-	const t_delete_card = wait(main.querySelector('#delete'), 'click').then(e => {
-		e.preventDefault();
-		card.delete();
-	});
+		<div class="spacer"></div>
+		
+		<div class="space-between">
+			<button ${e => {
+				t_delete_card = new Promise(resolve => {
+					on('click', ev => {
+						ev.preventDefault();
+						const data = new FormData(form);
+						card.name = data.get('name');
+						card.color = data.get('color');
+						card.save();
+					}, {once: true})
+				});
+			}}>Delete</button>
+			<button ${e => {
+				t_save_card = new Promise(resolve => {
+					on('click', ev => {
+						e.preventDefault();
+						card.delete();
+						resolve();
+					});
+				});
+			}}>Save</button>
+		</div>
+	</form>`);
 	await Promise.race([t_save_card, t_delete_card]);
 }
 
 // Display card view
-async function view_card(card) {
-	swap_scene('card-view');
-	
+async function view_card(card) {	
 	const canvas = document.createElement('canvas');
 	// a list of formats is: https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API#supported_barcode_formats
 	const supported_barcode_formats = [
@@ -286,29 +173,30 @@ async function view_card(card) {
 	} else {
 		throw "unsupported format";
 	}
-	main.querySelector('img').replaceWith(canvas);
-	main.querySelector('#name').innerText = card.name;
-	main.querySelector('#rawValue').innerText = card.rawValue;
 
-	const t_edit_card = wait(main.querySelector('#edit'), 'click').then(_ => 
-		edit_card(card, canvas)
-	);
-	const t_back = wait(main.querySelector('#back'), 'click');
+	
+	let t_edit_card, t_back;
+	mount(html`
+	<button ${e => {
+		t_back = wait(e, 'click');
+	}}>&lt; Back</button>
+	${canvas}
+	<p>${card.name}</p>
+	<p>${card.rawValue}</p>
+
+	<button ${e => {
+		t_edit_card = wait(e, 'click').then(_ => 
+			edit_card(card, canvas)
+		);
+	}}>Edit</button>
+	`);
 
 	await Promise.race([t_edit_card, t_back]);
 }
 
 // Add card view
 async function add_card() {
-	// Load the capture scene
-	swap_scene('card-capture', 'backdrop');
-	// Get elements from the card_capture scene
-	const canvas = main.querySelector('canvas');
-	const back_btn = main.querySelector('button.back');
-	const sc_btn = main.querySelector('button.sc');
-
 	let quit = false;
-	wait(back_btn, 'click').then(_ => quit = true);
 	
 	let switch_camera = true;
 	let deviceId = '';
@@ -320,16 +208,23 @@ async function add_card() {
 	}
 	const detector = new BarcodeDetector();
 
-	const ctx = canvas.getContext('2d');
+	let canvas, ctx;
+	mount(html`
+		<button ${on('click', () => {quit = true})}>&lt; Back</button>
+		<button ${on('click', () => {switch_camera = true})}>sc</button>
+		<canvas ${e => {
+			canvas = e;
+			ctx = e.getContext('2d');
+		}}></canvas>
+		<p>Place the barcode in front of the camera</p>
+	`);
 
-	let last_found = [];
 	let barcode, track;
 	while (!quit && !barcode) {
 		if (switch_camera) {
 			if (track) {
 				track.stop();
 			}
-			wait(sc_btn, 'click').then(_ => switch_camera = true);
 			switch_camera = false;
 
 			let video_constraints = {
