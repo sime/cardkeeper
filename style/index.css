@@ -76,6 +76,11 @@ main {
 	box-sizing: border-box;
 	flex-direction: column;
 	gap: 8px;
+	/* height: 100vh; */
+	justify-content: space-around;
+	padding: 16px;
+	min-height: 100%;
+	box-sizing: border-box;
 }
 main.backdrop {
 	background-color: #000;
@@ -183,8 +188,9 @@ input[value="#40c057"] {
 	overflow-x: scroll;
 	/* width: 100%; */
 	scroll-snap-type: x mandatory;
-	scrollbar-color: red;
 	scroll-behavior: smooth;
+	scrollbar-color: transparent transparent;
+	scrollbar-width: thin;
 }
 #onboard-container::-webkit-scrollbar {
 	/* Hide the scrollbar on the #onboard-container */
@@ -222,4 +228,28 @@ p.perm-warning {
     color: #909090;
     visibility: hidden;
     margin: 0 40px;
+}
+.card-list {
+	flex: 1 1;
+	display: flex;
+	overflow-y: scroll;
+	padding: 0;
+	color: white;
+	gap: 23px;
+	flex-direction: column;
+}
+.card-list li {
+	/* --card-color: red; */
+	/* Stack the circles ontop of the card's color */
+	background: url("/assets/card-half.svg"), var(--card-color, #0031AF);
+	display: block;
+	background-blend-mode: screen;
+	list-style: none;
+	border-radius: 16px 16px 0 0;
+	padding: 28px 19px 19px 19px;
+	background-size: cover;
+}
+
+.card-list h2 {
+    text-align: unset;
 }

@@ -1,49 +1,35 @@
-<svg width="375" height="117" viewBox="0 0 375 117" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_d_8_3154)">
-<g clip-path="url(#clip0_8_3154)">
-<path d="M16 24C16 15.1634 23.1634 8 32 8H343C351.837 8 359 15.1634 359 24V93H16V24Z" fill="#96491F"/>
-<g filter="url(#filter1_b_8_3154)">
-<ellipse rx="85" ry="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 341.717 50.3718)" fill="#FFAC7D" fill-opacity="0.3"/>
-</g>
-<g filter="url(#filter2_b_8_3154)">
-<circle r="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 362.914 84.5002)" fill="#FFAC7D" fill-opacity="0.3"/>
-</g>
-<g filter="url(#filter3_b_8_3154)">
-<ellipse rx="85" ry="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 306.85 134.629)" fill="#FFAC7D" fill-opacity="0.3"/>
-</g>
-</g>
-</g>
-<defs>
-<filter id="filter0_d_8_3154" x="0" y="0" width="375" height="117" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dy="8"/>
-<feGaussianBlur stdDeviation="8"/>
-<feComposite in2="hardAlpha" operator="out"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_8_3154"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_8_3154" result="shape"/>
-</filter>
-<filter id="filter1_b_8_3154" x="217.213" y="-75.1636" width="249.008" height="251.071" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feGaussianBlur in="BackgroundImage" stdDeviation="20"/>
-<feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_8_3154"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_backgroundBlur_8_3154" result="shape"/>
-</filter>
-<filter id="filter2_b_8_3154" x="238.41" y="-41.0352" width="249.008" height="251.071" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feGaussianBlur in="BackgroundImage" stdDeviation="20"/>
-<feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_8_3154"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_backgroundBlur_8_3154" result="shape"/>
-</filter>
-<filter id="filter3_b_8_3154" x="182.346" y="9.09326" width="249.008" height="251.071" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feGaussianBlur in="BackgroundImage" stdDeviation="20"/>
-<feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_8_3154"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_backgroundBlur_8_3154" result="shape"/>
-</filter>
-<clipPath id="clip0_8_3154">
-<path d="M16 24C16 15.1634 23.1634 8 32 8H343C351.837 8 359 15.1634 359 24V93H16V24Z" fill="white"/>
-</clipPath>
-</defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 117" style="background-color: black;">
+		<filter id="blur" width="160%" height="160%" x="-30%" y="-30%">
+		  <!-- insert a neutral background color to prevent the backdrop showing
+			   through blurred regions with alpa < 1 -->
+		  <feFlood flood-color="#4d4d4d" result="neutral"/>
+		  <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blurred" />
+		  <feMerge>
+			<feMergeNode in="neutral" />
+			<feMergeNode in="blurred" />
+		  </feMerge>
+		</filter>
+	<clipPath id="cp1">
+		<circle id="c2" r="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 362.914 84.5002)"/>
+	</clipPath>
+	<clipPath id="cp2">
+		<circle id="c3" r="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 306.85 134.629)"/>
+	</clipPath>
+	<circle r="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 341.717 50.3718)" fill="#ffffff4d"/>
+
+	<g clip-path="url(#cp1)">
+		<g filter="url(#blur)">
+			<circle r="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 341.717 50.3718)" fill="#ffffff4d"/>
+		</g>
+	</g>
+	<g clip-path="url(#cp2)">
+		<g id="back-1" filter="url(#blur)">
+			<g clip-path="url(#cp1)">
+				<g filter="url(#blur)">
+					<circle r="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 341.717 50.3718)" fill="#ffffff4d"/>
+				</g>
+			</g>
+			<circle r="85" transform="matrix(0.247349 0.968927 -0.962652 0.270742 341.717 50.3718)" fill="#ffffff4d"/>
+		</g>
+	</g>
 </svg>

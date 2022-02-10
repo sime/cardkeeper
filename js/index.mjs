@@ -49,15 +49,29 @@ async function card_keeper() {
 			let t_add_card, t_view_card;
 			mount(html`
 				<h1>Card Keeper</h1>
-				<ul ${e => {
+				<ul class="card-list" ${e => {
 					t_view_card = new Promise(resolve => {
-						on('click', ev => {
-							resolve(new Card(ev.target.dataset['cardid']));
-						}, {once: true})(e);
-					});
+						function click_handler(ev) {
+							const card_el = ev.target.closest('li');
+							const card_id = card_el?.dataset['cardid'];
+							if (card_id) {
+								resolve(new Card(card_id));
+								e.removeEventListener('click', click_handler);
+							}
+						}
+						e.addEventListener('click', click_handler);
+					}).then(c => view_card(c));
 				}}>
 				${cards.map(card => html`
-					<li ${e => {e.dataset['cardid'] = card.id}}>${card.name}</li>
+					<li ${e => {
+						e.dataset['cardid'] = card.id;
+						if (card.color) {
+							e.style.setProperty('--card-color', card.color);
+						}
+					}}>
+						<h2>${card.name}</h2>
+						<p>${card.rawValue}</p>
+					</li>
 				`)}
 				</ul>
 				<button ${e => {
@@ -114,20 +128,21 @@ async function edit_card(card, image = null) {
 				t_delete_card = new Promise(resolve => {
 					on('click', ev => {
 						ev.preventDefault();
-						const data = new FormData(form);
-						card.name = data.get('name');
-						card.color = data.get('color');
-						card.save();
-					}, {once: true})
+						card.delete();
+						resolve();
+					})(e);
 				});
 			}}>Delete</button>
 			<button ${e => {
 				t_save_card = new Promise(resolve => {
 					on('click', ev => {
-						e.preventDefault();
-						card.delete();
+						ev.preventDefault();
+						const data = new FormData(form);
+						card.name = data.get('name');
+						card.color = data.get('color');
+						card.save();
 						resolve();
-					});
+					}, {once: true})(e);
 				});
 			}}>Save</button>
 		</div>
