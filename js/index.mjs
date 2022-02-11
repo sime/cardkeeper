@@ -16,6 +16,23 @@ const card_colors = [
 	{ name: "Lime",   disp: "#E8F34F", value: "#696E1C" },
 	{ name: "Tosca",  disp: "#78F4C7", value: "#2B8665" },
 ];
+// a list of formats is: https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API#supported_barcode_formats
+const supported_barcode_formats = [
+	'code_128',
+	'code_39',
+	'ean_13',
+	'ean_8',
+	'itf',
+	'upc_a',
+	'upc_e'
+];
+function format_rawValue(card) {
+	let prefix = "";
+	if (supported_barcode_formats.includes(card.format)) {
+		prefix = "#";
+	}
+	return new Text(prefix + card.rawValue);
+}
 
 // This transition occurs when a new service worker claims the page.
 const t_sw_update = new Promise(resolve => {
@@ -83,7 +100,7 @@ async function card_keeper() {
 						e.style.setProperty('--card-color', color.value);
 					}}>
 						<h2>${card.name}</h2>
-						<p>${card.rawValue}</p>
+						<p>${format_rawValue(card)}</p>
 					</li>
 				`)}
 				</ul>
@@ -113,12 +130,7 @@ async function edit_card(card, image = null) {
 	mount(html`
 	<p class="saved-notif">New Card Saved!</p>
 	<div class="card-preview" ${e => {card_preview = e}}>
-		${() => {
-			if (card.format === 'qr_code') {
-				// Only output the rawvalue for qrcodes because the barcodes embed the value in their image.
-				return html`<output>${card.rawValue}</output>`;
-			}
-		}}
+		${format_rawValue(card)}
 	</div>
 	<label for="card-name">Card Name:</label>
 	<input type="text" id="card-name" placeholder="Name your card" ${e => {
@@ -130,38 +142,33 @@ async function edit_card(card, image = null) {
 		});
 	}}>
 	<label for="card-color">Card Colour:</label>
-	<select id="card-color" ${e => {
-		for (let i = 0; i < card_colors.length; ++i) {
-			const color = card_colors[i];
-			e.appendChild(html`<option ${e => {
-				if (i == card.color) {
-					e.selected = true;
-				}
-			}}><span class="swatch"></span>${color.name}</option>`);
-		}
-		function update_preview() {
+	<button id="card-color" ${e => {
+		const update = () => {
 			const color = card_colors[card.color];
-			card_preview.style.setProperty('--card-color', color.value);
-		}
+			e.style.setProperty('--swatch-color', color.disp);
+			e.innerText = color.name;
+			card_preview.style.backgroundColor = color.value;
+		};
 		e.addEventListener('click', async ev => {
 			ev.preventDefault();
 			e.blur();
 			let t = save();
 			card.color = await color_picker(card.color);
 			mount(t);
-			update_preview();
+			update();
 		});
-		update_preview();
-	}}></select>
-	<div>
-		<button ${e => {
+		update();
+	}}></button>
+	<div class="filler"></div>
+	<div class="btn-group">
+		<button class="icon-btn" ${e => {
 			t_delete_card = new Promise(resolve => {
 				e.addEventListener('click', () => {
 					card.delete();
 					resolve();
 				}, {once: true});
 			});
-		}}>Delete</button>
+		}}><img src="/assets/trash.svg"></button>
 		<button ${e => {
 			t_save_card = new Promise(resolve => {
 				e.addEventListener('click', () => {
@@ -179,13 +186,19 @@ async function color_picker(initial_color_index) {
 	let color = initial_color_index;
 	let preview;
 	mount(html`
-		<button ${e => {
+		<button class="cancel-btn" ${e => {
 			t_cancel = new Promise(resolve => {
 				e.addEventListener('click', () => {
 					resolve(initial_color_index);
 				}, {once: true});
 			});
-		}}>Cancel</button>
+		}}>
+			<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg>
+			Cancel
+		</button>
 		<div class="color-preview" ${e => {
 			preview = e;
 			e.style.setProperty('--picker-color', card_colors[color].value);
@@ -205,13 +218,15 @@ async function color_picker(initial_color_index) {
 				}}>
 			`)}
 		</fieldset>
-		<button ${e => {
-			t_save = new Promise(resolve => {
-				e.addEventListener('click', () => {
-					resolve(color);
-				}, {once: true});
-			});
-		}}>Save Colour</button>
+		<div class="btn-group">
+			<button ${e => {
+				t_save = new Promise(resolve => {
+					e.addEventListener('click', () => {
+						resolve(color);
+					}, {once: true});
+				});
+			}}>Save Colour</button>
+		</div>
 	`);
 	return await Promise.race([t_cancel, t_save]);
 }
@@ -219,16 +234,6 @@ async function color_picker(initial_color_index) {
 // Display card view
 async function view_card(card) {	
 	const canvas = document.createElement('canvas');
-	// a list of formats is: https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API#supported_barcode_formats
-	const supported_barcode_formats = [
-		'code_128',
-		'code_39',
-		'ean_13',
-		'ean_8',
-		'itf',
-		'upc_a',
-		'upc_e'
-	];
 	if (supported_barcode_formats.includes(card.format)) {
 		// Convert between browser format names and JsBarcode names:
 		let format = card.format.toUpperCase();
@@ -238,7 +243,7 @@ async function view_card(card) {
 		} else if (format == 'UPCA') {
 			format = 'UPC';
 		}
-		JsBarcode(canvas, card.rawValue, { format });
+		JsBarcode(canvas, card.rawValue, { format, displayValue: false, textPosition: "top" });
 	} else if (card.format == "qr_code") {
 		const ctx = canvas.getContext('2d');
 		const code = qrcode(0, 'M');
@@ -258,18 +263,20 @@ async function view_card(card) {
 	
 	let t_edit_card, t_back;
 	mount(html`
-	<button ${e => {
+	<button class="cancel-btn" ${e => {
 		t_back = wait(e, 'click');
-	}}>&lt; Back</button>
-	${canvas}
-	<p>${card.name}</p>
-	<p>${card.rawValue}</p>
+	}}>Back</button>
+	<div class="card-display">
+		${canvas}
+		<h2>${card.name}</h2>
+		<p>${format_rawValue(card)}</p>
+	</div>
 
 	<button ${e => {
 		t_edit_card = wait(e, 'click').then(_ => 
 			edit_card(card, canvas)
 		);
-	}}>Edit</button>
+	}}>Edit Card <img src="/assets/edit-icon.svg"></button>
 	`);
 
 	await Promise.race([t_edit_card, t_back]);
@@ -291,9 +298,17 @@ async function add_card() {
 
 	let canvas, ctx;
 	mount(html`
-		<button ${on('click', () => {quit = true})}>&lt; Back</button>
-		<button ${on('click', () => {switch_camera = true})}>sc</button>
-		<canvas ${e => {
+		<div style="display: flex;color: white;align-items: center;justify-content: space-between;">
+			<button class="cancel-btn" ${on('click', () => {quit = true})}>
+				<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+				Back
+			</button>
+			<button class="icon-btn sc-btn" ${on('click', () => {switch_camera = true})}><img src="/assets/flip-camera-icon.svg"></button>
+		</div>
+		<canvas class="image-capture" ${e => {
 			canvas = e;
 			ctx = e.getContext('2d');
 		}}></canvas>
