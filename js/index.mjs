@@ -1,7 +1,21 @@
 import { wait, defered } from './lib.mjs';
 import { Card } from './card.mjs';
-import { mount, html, on } from './templating.mjs';
+import { mount, save, html, on } from './templating.mjs';
 import onboarding from './onboarding.mjs';
+
+
+const card_colors = [
+	{ name: "Blue",   disp: "#608DFF", value: "#0031AF" },
+	{ name: "Purple", disp: "#D9A7FF", value: "#681CA2" },
+	{ name: "Pink",   disp: "#FFB9EB", value: "#A82783" },
+	{ name: "Golden", disp: "#FFD056", value: "#B8992B" },
+	{ name: "Green",  disp: "#C1FF90", value: "#4D871F" },
+	{ name: "Teal",   disp: "#92DEFF", value: "#1A779F" },
+	{ name: "Red",    disp: "#FE8D8D", value: "#A70E0E" },
+	{ name: "Brown",  disp: "#FFAC7D", value: "#96491F" },
+	{ name: "Lime",   disp: "#E8F34F", value: "#696E1C" },
+	{ name: "Tosca",  disp: "#78F4C7", value: "#2B8665" },
+];
 
 // This transition occurs when a new service worker claims the page.
 const t_sw_update = new Promise(resolve => {
@@ -65,9 +79,8 @@ async function card_keeper() {
 				${cards.map(card => html`
 					<li ${e => {
 						e.dataset['cardid'] = card.id;
-						if (card.color) {
-							e.style.setProperty('--card-color', card.color);
-						}
+						const color = card_colors[card.color];
+						e.style.setProperty('--card-color', color.value);
 					}}>
 						<h2>${card.name}</h2>
 						<p>${card.rawValue}</p>
@@ -95,59 +108,112 @@ async function card_keeper() {
 async function edit_card(card, image = null) {
 	let form;
 	let t_save_card, t_delete_card;
+	let card_preview;
+	// TODO: Only show the "New Card Saved!" message if we are editing a new card.
 	mount(html`
-	<h2>Edit Card</h2>
-	<div>
+	<p class="saved-notif">New Card Saved!</p>
+	<div class="card-preview" ${e => {card_preview = e}}>
 		${() => {
 			if (card.format === 'qr_code') {
 				// Only output the rawvalue for qrcodes because the barcodes embed the value in their image.
 				return html`<output>${card.rawValue}</output>`;
 			}
 		}}
-		<span>${image}<span>
 	</div>
-	<form ${e => {form = e}}>
-		<label>
-			Give the card a name:<br>
-			<input name="name" type="text" ${e => {e.value = card.name}}>
-		</label>
-		<fieldset>
-			<legend>Choose a colour</legend>
-			${["#fa5252", "#e64980", "#be4bdb", "#4c6ef5", "#228be6", "#15aabf", "#12b886", "#40c057"].map(color => html`
-				<input name="color" type="radio" ${e => {
-					if (color == card.color) e.checked = true;
-					e.value = color;
+	<label for="card-name">Card Name:</label>
+	<input type="text" id="card-name" placeholder="Name your card" ${e => {
+		if (card.name != "") {
+			e.value = card.name;
+		}
+		e.addEventListener('change', () => {
+			card.name = e.value;
+		});
+	}}>
+	<label for="card-color">Card Colour:</label>
+	<select id="card-color" ${e => {
+		for (let i = 0; i < card_colors.length; ++i) {
+			const color = card_colors[i];
+			e.appendChild(html`<option ${e => {
+				if (i == card.color) {
+					e.selected = true;
+				}
+			}}><span class="swatch"></span>${color.name}</option>`);
+		}
+		function update_preview() {
+			const color = card_colors[card.color];
+			card_preview.style.setProperty('--card-color', color.value);
+		}
+		e.addEventListener('click', async ev => {
+			ev.preventDefault();
+			e.blur();
+			let t = save();
+			card.color = await color_picker(card.color);
+			mount(t);
+			update_preview();
+		});
+		update_preview();
+	}}></select>
+	<div>
+		<button ${e => {
+			t_delete_card = new Promise(resolve => {
+				e.addEventListener('click', () => {
+					card.delete();
+					resolve();
+				}, {once: true});
+			});
+		}}>Delete</button>
+		<button ${e => {
+			t_save_card = new Promise(resolve => {
+				e.addEventListener('click', () => {
+					card.save();
+					resolve();
+				}, {once: true});
+			});
+		}}>Save Card</button>
+	</div>`);
+	await Promise.race([t_save_card, t_delete_card]);
+}
+
+async function color_picker(initial_color_index) {
+	let t_cancel, t_save;
+	let color = initial_color_index;
+	let preview;
+	mount(html`
+		<button ${e => {
+			t_cancel = new Promise(resolve => {
+				e.addEventListener('click', () => {
+					resolve(initial_color_index);
+				}, {once: true});
+			});
+		}}>Cancel</button>
+		<div class="color-preview" ${e => {
+			preview = e;
+			e.style.setProperty('--picker-color', card_colors[color].value);
+		}}></div>
+		<fieldset class="color-picker" ${e => {
+			e.addEventListener('change', ev => {
+				color = ev.target.value;
+				preview.style.setProperty('--picker-color', card_colors[color].value);
+			});
+		}}>
+			<legend>Select Card Colour</legend>
+			${card_colors.map((c, i) => html`
+				<input name="color_index" type="radio" ${e => {
+					if (i == initial_color_index) e.checked = true;
+					e.value = i;
+					e.style.setProperty('--picker-color', c.disp);
 				}}>
 			`)}
 		</fieldset>
-
-		<div class="spacer"></div>
-		
-		<div class="space-between">
-			<button ${e => {
-				t_delete_card = new Promise(resolve => {
-					on('click', ev => {
-						ev.preventDefault();
-						card.delete();
-						resolve();
-					})(e);
-				});
-			}}>Delete</button>
-			<button ${e => {
-				t_save_card = new Promise(resolve => {
-					on('click', ev => {
-						ev.preventDefault();
-						const data = new FormData(form);
-						card.name = data.get('name');
-						card.color = data.get('color');
-						card.save();
-						resolve();
-					}, {once: true})(e);
-				});
-			}}>Save</button>
-		</div>
-	</form>`);
-	await Promise.race([t_save_card, t_delete_card]);
+		<button ${e => {
+			t_save = new Promise(resolve => {
+				e.addEventListener('click', () => {
+					resolve(color);
+				}, {once: true});
+			});
+		}}>Save Colour</button>
+	`);
+	return await Promise.race([t_cancel, t_save]);
 }
 
 // Display card view

@@ -12,7 +12,7 @@ html, body {
 }
 h1, h2, h3, h4, h5, h6 {
 	margin: unset;
-	text-align: center;
+	/* text-align: center; */
 }
 canvas {
 	box-sizing: border-box;
@@ -77,10 +77,12 @@ main {
 	flex-direction: column;
 	gap: 8px;
 	/* height: 100vh; */
-	justify-content: space-around;
+	justify-content: space-between;
 	padding: 16px;
 	min-height: 100%;
 	box-sizing: border-box;
+	font-weight: 700;
+	align-items: stretch;
 }
 main.backdrop {
 	background-color: #000;
@@ -95,7 +97,7 @@ button {
 	border: none;
 	border-radius: 40px;
 	height: 60px;
-	margin: 0 40px;
+	/* margin: 0 40px; */
 	padding: 16px;
 	width: unset;
 	/* max-width: unset; */
@@ -111,25 +113,30 @@ fieldset {
 	margin: unset;
 	padding: unset;
 	border: unset;
-	width: min-content;
+	/* width: min-content; */
 	/* margin: 0 auto; */
 	display: grid;
-	grid-template: 1fr / 1fr 1fr 1fr 1fr;
+	/* grid-template: 1fr / 1fr 1fr 1fr 1fr; */
+	grid-template-columns: 1fr 1fr;
+	grid-auto-flow: row;
+	gap: 24px;
 }
 legend {
-	width: max-content;
+	/* width: max-content; */
 }
 input[type="radio"] {
-	margin: .2em;
-	padding: unset;
+	/* display: block; */
+	/* margin: .2em; */
+	/* padding: unset; */
 	appearance: none;
-	width: 2em;
-	height: 2em;
-	border: 1px solid #555;
+	/* width: 2em; */
+	/* height: 2em; */
+	/* border: 1px solid #555; */
 	/* background-color: attr(value color); Sad that this doesn't work */
 }
-input[type="radio"]:checked {
-	border-width: 3px;
+.color-picker :checked {
+	outline: 2px solid black;
+	outline-offset: 8px;
 }
 input[value="#fa5252"] {
 	background-color: #fa5252;
@@ -202,6 +209,7 @@ input[value="#40c057"] {
 	margin: 0 40px;
 	margin-bottom: 0;
 	scroll-snap-stop: always;
+	font-weight: initial;
 }
 
 .doohicky {
@@ -252,4 +260,67 @@ p.perm-warning {
 
 .card-list h2 {
     text-align: unset;
+}
+
+#onboard-container h1 {
+    text-align: center;
+}
+
+.saved-notif {
+    background-color: #4D94FF;
+    border-radius: 20px;
+    padding: 8px 24px;
+    color: white;
+    font-weight: bold;
+    align-self: center;
+    flex-basis: content;
+    margin: 0;
+}
+
+.card-preview {
+    background: url(/assets/card-full.svg), var(--card-color, blue);
+    width: 343px;
+    background-blend-mode: screen;
+    height: 192px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 25px;
+    box-sizing: border-box;
+    align-self: center;
+    color: white;
+    font-weight: bold;
+}
+
+select, input[type="text"] {
+    padding: 8px;
+    border-radius: 8px;
+    /* appearance: none; */
+    background-color: white;
+    border: 1px solid #8C8C8C;
+}
+
+.color-picker input {
+    background-color: var(--picker-color);
+    height: 40px;
+    border-radius: 4px;
+    /* margin: 24px; */
+}
+
+.color-preview {
+    background: url(/assets/card-half.svg), var(--picker-color);
+    background-size: cover;
+    background-blend-mode: screen;
+    height: 85px;
+    width: 343px;
+    align-self: center;
+    border-radius: 16px 16px 0px 0px;
+}
+
+.color-picker legend {
+    /* display: block; */
+    text-align: center;
+    font-size: 20px;
+    /* padding: 16px; */
 }

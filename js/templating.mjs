@@ -12,6 +12,14 @@ export function mount(contents) {
 	main.appendChild(contents);
 }
 
+export function save() {
+	const ret = new DocumentFragment();
+	while (main.firstChild) {
+		ret.appendChild(main.firstChild);
+	}
+	return ret;
+}
+
 export function html(strings, ...expressions) {
 	let template = template_cache.get(strings);
 	if (!template) {

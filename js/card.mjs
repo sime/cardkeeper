@@ -12,8 +12,8 @@ export class Card {
 			this.id = Card.make_id();
 			this.format = idOrBarcode.format;
 			this.rawValue = idOrBarcode.rawValue;
-			this.name = "[new card]";
-			this.color = false;
+			this.name = "";
+			this.color = 0;
 			this.save();
 		} else {
 			throw "";
