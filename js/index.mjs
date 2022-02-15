@@ -122,13 +122,13 @@ async function card_keeper() {
 }
 
 // Edit card view
-async function edit_card(card, image = null) {
+async function edit_card(card, is_new = false) {
 	let form;
 	let t_save_card, t_delete_card;
 	let card_preview;
 	// TODO: Only show the "New Card Saved!" message if we are editing a new card.
 	mount(html`
-	<p class="saved-notif">New Card Saved!</p>
+	${() => is_new ? html`<p class="saved-notif">New Card Saved!</p>` : null}
 	<div class="card-preview" ${e => {card_preview = e}}>
 		${format_rawValue(card)}
 	</div>
@@ -274,7 +274,7 @@ async function view_card(card) {
 
 	<button ${e => {
 		t_edit_card = wait(e, 'click').then(_ => 
-			edit_card(card, canvas)
+			edit_card(card)
 		);
 	}}>Edit Card <img src="/assets/edit-icon.svg"></button>
 	`);
@@ -290,15 +290,15 @@ async function add_card() {
 	let deviceId = '';
 
 	const video = document.createElement('video');
+	video.classList.add('image-capture');
 
 	if (!('BarcodeDetector' in window)) {
 		throw new Error("BarcodeDetector unsupported");
 	}
 	const detector = new BarcodeDetector();
 
-	let canvas, ctx;
 	mount(html`
-		<div style="display: flex;color: white;align-items: center;justify-content: space-between;">
+		<div class="top-actions">
 			<button class="cancel-btn" ${on('click', () => {quit = true})}>
 				<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -308,19 +308,16 @@ async function add_card() {
 			</button>
 			<button class="icon-btn sc-btn" ${on('click', () => {switch_camera = true})}><img src="/assets/flip-camera-icon.svg"></button>
 		</div>
-		<canvas class="image-capture" ${e => {
-			canvas = e;
-			ctx = e.getContext('2d');
-		}}></canvas>
-		<p>Place the barcode in front of the camera</p>
-	`);
+		<p class="camera-request">Requesting Camera Access...</p>
+		${video}
+		<img class="capture-overlay" src="/assets/camera-overlay.svg">
+		<p ${el => {}} class="capture-status">Place barcode inside the area</p>
+	`, "capture");
 
 	let barcode, track;
 	while (!quit && !barcode) {
 		if (switch_camera) {
-			if (track) {
-				track.stop();
-			}
+			if (track) track.stop();
 			switch_camera = false;
 
 			let video_constraints = {
@@ -356,22 +353,21 @@ async function add_card() {
 				throw new Error("No video track in the stream!");
 			}
 			deviceId = track.getSettings().deviceId;
-			console.log(deviceId);
-			const vid_settings = track.getSettings();
-			canvas.width = vid_settings.width;
-			canvas.height = vid_settings.height;
+			// console.log(deviceId);
+			// const vid_settings = track.getSettings();
+			// canvas.width = vid_settings.width;
+			// canvas.height = vid_settings.height;
 		}
 
 
-		ctx.drawImage(video, 0, 0);
-
+		// ctx.drawImage(video, 0, 0);
 		// TODO: draw last_found (Would be inaccurate since it was from the last image...)
 		// TODO: Stacked canvases? One just for drawing bounding box / cornerPoints?
 
 		try {
 			// STATE: detect
 			// const barcodes = await detector.detect(bitmap);
-			const barcodes = await detector.detect(canvas);
+			const barcodes = await detector.detect(video);
 			if (barcodes.length > 0) {
 				console.log(barcodes);
 			}
@@ -379,11 +375,11 @@ async function add_card() {
 				barcode = barcodes[0];
 
 				// Crop the canvas to the bounding box of the found barcode.  We'll use this image in the edit screen.
-				const {x: sx, y: sy, width, height} = barcode.boundingBox;
-				const bitmap = await createImageBitmap(canvas, sx, sy, width, height);
-				canvas.width = width;
-				canvas.height = height;
-				ctx.drawImage(bitmap, 0, 0);
+				// const {x: sx, y: sy, width, height} = barcode.boundingBox;
+				// const bitmap = await createImageBitmap(canvas, sx, sy, width, height);
+				// canvas.width = width;
+				// canvas.height = height;
+				// ctx.drawImage(bitmap, 0, 0);
 			} else if (barcodes.length > 1) {
 				// TODO: Set last_found and skip.
 			}
@@ -395,13 +391,11 @@ async function add_card() {
 			}
 		}
 	}
-	if (track) {
-		track.stop();
-		video.pause();
-	}
+	if (track) track.stop();
+	video.pause();
 	if (!quit) {
 		// Create the barcode
 		const card = new Card(barcode);
-		await edit_card(card, canvas);
+		await edit_card(card, true);
 	}
 }

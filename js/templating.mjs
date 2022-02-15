@@ -4,12 +4,13 @@ const template_cache = new WeakMap();
 
 // Function to clone a template / replace the main content
 const main = document.querySelector('main');
-export function mount(contents) {
+export function mount(contents, className = "") {
 	// Remove old contents:
 	while (main.firstChild) {
 		main.firstChild.remove();
 	}
 	main.appendChild(contents);
+	main.className = className;
 }
 
 export function save() {
