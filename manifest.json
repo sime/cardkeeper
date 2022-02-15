@@ -1,0 +1,25 @@
+{
+	"$schema": "https://json.schemastore.org/web-manifest-combined.json",
+	"name": "Card Keeper",
+	"short_name": "Card Keeper",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#fff",
+	"theme_color": "#4D94FF",
+	"description": "An app for storing your loyalty and membership cards so you can always have them with you.",
+	"icons": [{
+		"src": "icons/home.svg",
+		"sizes": "512x512",
+		"type": "image/svg",
+		"purpose": "any"
+	}, {
+		"src": "icons/home.svg",
+		"sizes": "512x512",
+		"type": "image/svg",
+		"purpose": "maskable"
+	}, {
+		"src": "icons/splash.png",
+		"sizes": "512x512",
+		"type": "image/png"
+	}]
+}

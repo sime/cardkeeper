@@ -8,23 +8,17 @@ Retrieving the membership card shows an accurate representation
 of the barcode which can be scanned at the merchant, e.g. coffee shops, fitness gyms, etc.
 
 ## Requirements:
-* [ ] Reading barcodes
-	* [ ] What kinds of cards are there?  Barcode, QR Code?... any others?
-	* [ ] Should the image frames be processed in a/some web workers?
-	* Getting images from the user's camera: ImageCapture API (Not supported in FF, or Safari)? It has a convenient grabFrame method though.
-		* Alternative is just the normal render to canvas + extract bitmap method.
-	* Should the preview be a video or just updated whenever we grab a frame?
-		* I think it should just update when we grab a frame so that the user knows ~how quickly it's running.
-* [ ] Storing cards
-	* [ ] IndexDB or LocalStorage?
-		* LocalStorage is just so convenient
-		* FileSystem API?  All other persistant storage APIs are best-effort and could be lost.
-* [ ] Styling cards: Color, name
-* [ ] Retrieving cards
-	* [ ] Generating barcode images (Is there a browser API for this? If not, what lib?)
-		* I imagine that the hardest parts will be displaying the barcode and using the ShapeDetection API.
-* [ ] Offline PWA things
-	* [ ] Find a good state for auto updating
+* [X] Reading barcodes
+	* Several Kinds of Barcodes and QRCodes
+	* The Barcode Reading API can work from a video so we don't need to use canvas at all.
+* [X] Storing cards
+	* LocalStorage
+* [X] Styling cards: Color, name
+* [X] Retrieving cards
+	* JsBarcode (MIT)
+	* qrcode-generator (MIT)
+* [X] Offline PWA things
+	* The App updates from the card display view.
 
 
 -----

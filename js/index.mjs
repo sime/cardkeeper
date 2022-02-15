@@ -1,4 +1,4 @@
-import { wait, defered } from './lib.mjs';
+import { wait } from './lib.mjs';
 import { Card } from './card.mjs';
 import { mount, save, html, on } from './templating.mjs';
 import onboarding from './onboarding.mjs';
@@ -311,7 +311,7 @@ async function add_card() {
 		<p class="camera-request">Requesting Camera Access...</p>
 		${video}
 		<img class="capture-overlay" src="/assets/camera-overlay.svg">
-		<p ${el => {}} class="capture-status">Place barcode inside the area</p>
+		<p class="capture-status">Place barcode inside the area</p>
 	`, "capture");
 
 	let barcode, track;
