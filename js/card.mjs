@@ -19,15 +19,6 @@ export class Card {
 			throw "";
 		}
 	}
-	make_card() {
-		const btn = document.createElement('button');
-		btn.innerText = this.name;
-		// TODO: add something that creates contrasting colors for the text.
-		btn.style.backgroundColor = this.color;
-		btn.dataset['cardid'] = this.id;
-
-		return btn;
-	}
 	save() {
 		localStorage.setItem(this.id, JSON.stringify(this));
 	}

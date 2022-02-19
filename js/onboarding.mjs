@@ -85,7 +85,7 @@ export default function onboarding() {
 				resolve();
 			}
 		})(btn);
-	}}}>
+	}}>
 		Next
 		<img width="28" height="28" src="/assets/button-arrow.svg">
 	</button>

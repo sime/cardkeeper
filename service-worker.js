@@ -1,5 +1,5 @@
 // This service worker will never refetch assets once it's installed the first time.  This means that in order for the app to update, the service worker must change and recache the assets.  Changing this verions number will do that.
-const version = "0.2"
+const version = "0.3"
 const static_cache_name = 'static_assets-' + version;
 
 const offline_assets = [
@@ -26,14 +26,22 @@ const offline_assets = [
 	'extern/JsBarcode.all.min.js',
 	'extern/qrcode_UTF8.js',
 	'extern/qrcode-generator.js',
+	'icons/favicon.svg',
+	'icons/splash.png',
 	'index.html',
 	'js/card.mjs',
-	'js/create-template.mjs',
-	'js/descendant-path.mjs',
-	'js/lib.mjs',
 	'js/index.mjs',
+	'js/lib/get-or-set.mjs',
+	'js/lib/trait.mjs',
 	'js/onboarding.mjs',
-	'js/templating.mjs',
+	'js/templating/apply-expression.mjs',
+	'js/templating/create-template.mjs',
+	'js/templating/descendant-path.mjs',
+	'js/templating/expressions.mjs',
+	'js/templating/html.mjs',
+	'js/templating/index.mjs',
+	'js/templating/mount.mjs',
+	'manifest.json',
 	'style/index.css',
 ];
 
