@@ -54,9 +54,6 @@ if ('serviceWorker' in navigator) {
 	});
 }
 
-
-
-
 // Run the app:
 try {
 	card_keeper();
@@ -372,7 +369,6 @@ async function add_card() {
 				audio: false
 			});
 
-			// video = document.createElement('video');
 			video.srcObject = stream;
 			await video.play();
 
@@ -383,35 +379,13 @@ async function add_card() {
 				throw new Error("No video track in the stream!");
 			}
 			deviceId = track.getSettings().deviceId;
-			// console.log(deviceId);
-			// const vid_settings = track.getSettings();
-			// canvas.width = vid_settings.width;
-			// canvas.height = vid_settings.height;
 		}
-
-
-		// ctx.drawImage(video, 0, 0);
-		// TODO: draw last_found (Would be inaccurate since it was from the last image...)
-		// TODO: Stacked canvases? One just for drawing bounding box / cornerPoints?
 
 		try {
 			// STATE: detect
-			// const barcodes = await detector.detect(bitmap);
 			const barcodes = await detector.detect(video);
 			if (barcodes.length > 0) {
-				console.log(barcodes);
-			}
-			if (barcodes.length == 1) {
 				barcode = barcodes[0];
-
-				// Crop the canvas to the bounding box of the found barcode.  We'll use this image in the edit screen.
-				// const {x: sx, y: sy, width, height} = barcode.boundingBox;
-				// const bitmap = await createImageBitmap(canvas, sx, sy, width, height);
-				// canvas.width = width;
-				// canvas.height = height;
-				// ctx.drawImage(bitmap, 0, 0);
-			} else if (barcodes.length > 1) {
-				// TODO: Set last_found and skip.
 			}
 		} catch (e) {
 			if (e.name === 'NotSupportedError') {
