@@ -312,17 +312,22 @@ img.capture-overlay {
 }
 
 p.camera-request {
-	color: white;
+	color: #BDBDBD;
 	font-size: 20px;
 	font-weight: 400;
 	text-align: center;
 	z-index: 1;
+	width: 167px;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	margin: 0;
 }
 
 main.capture {
 	background-color: #555;
 	color: white;
-	z-index: 1;
 	align-items: center;
 }
 
