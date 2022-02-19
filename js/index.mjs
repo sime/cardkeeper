@@ -122,11 +122,23 @@ async function card_keeper() {
 
 // Edit card view
 async function edit_card(card, is_new = false) {
-	let form;
-	let t_save_card, t_delete_card;
+	let t_save_card, t_delete_card, t_cancel;
 	let card_preview;
-	// TODO: Only show the "New Card Saved!" message if we are editing a new card.
 	mount(html`
+	<button class="cancel-btn" ${e => {
+		t_cancel = new Promise(resolve => {
+			e.addEventListener('click', () => {
+				if (is_new) card.delete();
+				resolve();
+			}, {once: true});
+		});
+	}}>
+		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+		</svg>
+		Cancel
+	</button>
 	${() => is_new ? html`<p class="saved-notif">New Card Saved!</p>` : null}
 	<div class="card-preview" ${e => {card_preview = e}}>
 		<span class="card-data">
@@ -179,7 +191,7 @@ async function edit_card(card, is_new = false) {
 			});
 		}}>Save Card</button>
 	</div>`);
-	await Promise.race([t_save_card, t_delete_card]);
+	await Promise.race([t_cancel, t_save_card, t_delete_card]);
 }
 
 async function color_picker(initial_color_index) {
@@ -266,7 +278,13 @@ async function view_card(card) {
 	mount(html`
 	<button class="cancel-btn" ${e => {
 		t_back = new Promise(res => on('click', res, {once: true})(e));
-	}}>Back</button>
+	}}>
+		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+		</svg>
+		Back
+	</button>
 	<div class="card-display">
 		${canvas}
 		${() => {
