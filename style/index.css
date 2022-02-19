@@ -221,7 +221,7 @@ p.perm-warning {
 	/* --card-color: red; */
 	/* Stack the circles ontop of the card's color */
 	background: url("/assets/card-half.svg"), var(--card-color, #0031AF);
-	display: block;
+	/* display: block; */
 	background-blend-mode: screen;
 	list-style: none;
 	border-radius: 16px 16px 0 0;
@@ -262,6 +262,8 @@ p.perm-warning {
     align-self: center;
     color: white;
     font-weight: bold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 select, input[type="text"], button#card-color {
@@ -448,4 +450,37 @@ p.capture-status {
     justify-content: space-between;
     z-index:3;
     align-self: stretch;
+}
+
+.card-data {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 30ch;
+    /* display: inline-block; */
+    overflow: hidden;
+}
+
+.card-data.no-clip {
+    white-space: unset;
+    text-overflow: unset;
+    max-width: unset;
+    word-break: break-all;
+}
+
+.card-display details {
+    /* justify-self: stretch; */
+    display: block;
+    align-self: stretch;
+    text-align: center;
+}
+
+.card-display summary {
+    /* text-align: center; */
+    font-weight: 700;
+    font-size: 25px;
+}
+
+.card-display h2 {
+    font-weight: 700;
+    font-size: 25px;
 }

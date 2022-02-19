@@ -99,7 +99,7 @@ async function card_keeper() {
 						e.style.setProperty('--card-color', color.value);
 					}}>
 						<h2>${card.name}</h2>
-						<p>${format_rawValue(card)}</p>
+						<p class="card-data">${format_rawValue(card)}</p>
 					</li>
 				`)}
 				</ul>
@@ -129,7 +129,9 @@ async function edit_card(card, is_new = false) {
 	mount(html`
 	${() => is_new ? html`<p class="saved-notif">New Card Saved!</p>` : null}
 	<div class="card-preview" ${e => {card_preview = e}}>
-		${format_rawValue(card)}
+		<span class="card-data">
+			${format_rawValue(card)}
+		</span>
 	</div>
 	<label for="card-name">Card Name:</label>
 	<input type="text" id="card-name" placeholder="Name your card" ${e => {
@@ -267,8 +269,19 @@ async function view_card(card) {
 	}}>Back</button>
 	<div class="card-display">
 		${canvas}
-		<h2>${card.name}</h2>
-		<p>${format_rawValue(card)}</p>
+		${() => {
+			if (card.rawValue.length > 30) {
+				return html`<details>
+					<summary>${card.name}</summary>
+					<p class="card-data no-clip">${format_rawValue(card)}</p>
+				</details>`;
+			} else {
+				return html`
+				<h2>${card.name}</h2>
+				<p class="card-value no-clip">${format_rawValue(card)}</p>`;
+			}
+		}}
+		
 	</div>
 
 	<button ${e => {
