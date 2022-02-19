@@ -1,6 +1,5 @@
-import { wait } from './lib.mjs';
 import { Card } from './card.mjs';
-import { mount, save, html, on } from './templating.mjs';
+import { mount, save, html, on } from './templating/index.mjs';
 import onboarding from './onboarding.mjs';
 
 
@@ -264,7 +263,7 @@ async function view_card(card) {
 	let t_edit_card, t_back;
 	mount(html`
 	<button class="cancel-btn" ${e => {
-		t_back = wait(e, 'click');
+		t_back = new Promise(res => on('click', res, {once: true})(e));
 	}}>Back</button>
 	<div class="card-display">
 		${canvas}
@@ -273,7 +272,7 @@ async function view_card(card) {
 	</div>
 
 	<button ${e => {
-		t_edit_card = wait(e, 'click').then(_ => 
+		t_edit_card = new Promise(res => on('click', res, {once: true})(e)).then(_ => 
 			edit_card(card)
 		);
 	}}>Edit Card <img src="/assets/edit-icon.svg"></button>

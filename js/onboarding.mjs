@@ -1,4 +1,4 @@
-import {mount, html, on} from './templating.mjs';
+import {mount, html, on} from './templating/index.mjs';
 
 export default function onboarding() {
 	return new Promise(resolve => {
