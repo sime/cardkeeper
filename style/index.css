@@ -17,8 +17,10 @@ h1, h2, h3, h4, h5, h6 {
 canvas {
 	box-sizing: border-box;
 	display: block;
-	max-width: 100%;
-	margin: 40px;
+	padding: 40px;
+	width: 100%;
+	image-rendering: pixelated;
+	image-rendering: crisp-edges;
 }
 
 h1 {

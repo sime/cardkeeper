@@ -3,6 +3,8 @@ import { mount, save, html, on } from './templating/index.mjs';
 import onboarding from './onboarding.mjs';
 
 
+const zxing_prom = ZXing();
+
 const card_colors = [
 	{ name: "Blue",   disp: "#608DFF", value: "#0031AF" },
 	{ name: "Purple", disp: "#D9A7FF", value: "#681CA2" },
@@ -242,35 +244,11 @@ async function color_picker(initial_color_index) {
 }
 
 // Display card view
-async function view_card(card) {	
+async function view_card(card) {
 	const canvas = document.createElement('canvas');
-	if (supported_barcode_formats.includes(card.format)) {
-		// Convert between browser format names and JsBarcode names:
-		let format = card.format.toUpperCase();
-		format = format.replace('_', '');
-		if (format == 'ITF') {
-			format = 'ITF14'
-		} else if (format == 'UPCA') {
-			format = 'UPC';
-		}
-		JsBarcode(canvas, card.rawValue, { format, displayValue: false, textPosition: "top" });
-	} else if (card.format == "qr_code") {
-		const ctx = canvas.getContext('2d');
-		const code = qrcode(0, 'M');
-		code.addData(card.rawValue);
-		code.make();
-		const cell_size = 10;
-		canvas.width = cell_size * code.getModuleCount();
-		canvas.height = cell_size * code.getModuleCount();
-		// What should cell size be?
-		code.renderTo2dContext(ctx, cell_size);
+	const ctx = canvas.getContext('2d');
+	// TODO: Make these scale for barcodes with more data?  Or maybe make it the Min(device width, device height)?
 
-		// Use QR code generation library
-	} else {
-		throw "unsupported format";
-	}
-
-	
 	let t_edit_card, t_back;
 	mount(html`
 	<button class="cancel-btn" ${e => {
@@ -305,6 +283,35 @@ async function view_card(card) {
 		);
 	}}>Edit Card <img src="/assets/edit-icon.svg"></button>
 	`);
+
+	const zxing = await zxing_prom;
+
+	const res = zxing.generateBarcode(card.rawValue, card.format);
+	console.log(res);
+	if (res.error != '') {
+		throw new Error(res.error);
+	} else {
+		const data = res.data;
+		canvas.width = res.width;
+		if (res.height == 1) {
+			// Barcode
+			const bar_height = canvas.height = canvas.width * 0.5;
+			for (let x = 0; x < data.length; ++x) {
+				if (data[x] === 0) {
+					ctx.fillRect(x, 0, 1, bar_height);
+				}
+			}
+		} else {
+			canvas.height = res.height;
+			// Expand the bw data to rgba and then put the image data into the canvas
+			const expanded_data = new Uint8ClampedArray(data.length * 4);
+			for (let i = 0; i < data.length; ++i) {
+				// By default, typed arrays are filled with 0.  Which will be black with 0 opacity.  All we need to do is change the opacity to 1 for the bytes that are supposed to be black.
+				expanded_data[i * 4 + 3] = data[i] ? 0 : 255;
+			}
+			ctx.putImageData(new ImageData(expanded_data, canvas.width), 0, 0);
+		}
+	}
 
 	await Promise.race([t_edit_card, t_back]);
 }
