@@ -119,7 +119,7 @@ async function card_keeper() {
 	}
 }
 
-class ZKBarcodeDetector {
+class ZXBarcodeDetector {
 	canvas = document.createElement('canvas');
 	ctx = this.canvas.getContext('2d');
 	cpp_buffer = null;
@@ -379,7 +379,7 @@ async function add_card() {
 	const video = document.createElement('video');
 	video.classList.add('image-capture');
 
-	const detector = ('BarcodeDetector' in window) ? new BarcodeDetector() : new ZKBarcodeDetector();
+	const detector = ('BarcodeDetector' in window) ? new BarcodeDetector() : new ZXBarcodeDetector();
 
 	mount(html`
 		<div class="top-actions">
