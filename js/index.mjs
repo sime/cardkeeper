@@ -2,6 +2,8 @@ import { Card } from './card.mjs';
 import { mount, save, html, on } from './templating/index.mjs';
 import onboarding from './onboarding.mjs';
 import { machine, SkipTransition } from './lib/machine.mjs';
+import { signal, use, use_later } from './reactivity.mjs';
+import { text } from './templating/expressions.mjs';
 
 
 const zxing_prom = ZXing();
@@ -169,6 +171,10 @@ class ZXBarcodeDetector {
 // Edit card view
 async function edit_card(card, is_new = false) {
 	const {state, transition} = machine();
+
+	const [name, set_name] = signal(card.name);
+	const [color, set_color] = signal(card.color);
+
 	let card_preview;
 	mount(html`
 	<button class="cancel-btn" ${on('click', transition('cancel', () => {
@@ -181,42 +187,34 @@ async function edit_card(card, is_new = false) {
 		Cancel
 	</button>
 	${is_new ? html`<p class="saved-notif">New Card Saved!</p>` : null}
-	<div class="card-preview" ${e => {card_preview = e}}>
+	<div class="card-preview" ${use_later(el => {
+		el.style.backgroundColor = card_colors[color()].value;
+	})}>
 		<span class="card-data">
 			${format_rawValue(card)}
 		</span>
 	</div>
 	<label for="card-name">Card Name:</label>
-	<input type="text" id="card-name" placeholder="Name your card" ${e => {
-		if (card.name != "") {
-			e.value = card.name;
-		}
-		e.addEventListener('change', () => {
-			card.name = e.value;
-		});
-	}}>
+	<input type="text" id="card-name" value="${name()}" placeholder="Name your card" ${on('change', ({target}) => set_name(target.value))}>
 	<label for="card-color">Card Colour:</label>
-	<button id="card-color" ${e => {
-		const update = () => {
-			const color = card_colors[card.color];
-			e.style.setProperty('--swatch-color', color.disp);
-			e.innerText = color.name;
-			card_preview.style.backgroundColor = color.value;
-		};
-		e.addEventListener('click', async () => {
+	<button id="card-color" ${[
+		use_later(e => e.style.setProperty('--swatch-color', card_colors[color()].disp)),
+		on('click', async () => {
 			let t = save();
-			card.color = await color_picker(card.color);
+			set_color(await color_picker(color()));
 			mount(t);
-			update();
-		});
-		update();
-	}}></button>
+		})
+	]}>${text(use_later(t => t.data = card_colors[color()].name))}</button>
 	<div class="filler"></div>
 	<div class="btn-group">
 		<button class="icon-btn" ${on('click', transition('delete', () => card.delete()), {once: true})}>
 			<img src="/assets/trash.svg">
 			</button>
-		<button ${on('click', transition('save', () => card.save()))}>Save Card</button>
+		<button ${on('click', transition('save', () => {
+			card.color = color();
+			card.name = name();
+			card.save();
+		}))}>Save Card</button>
 	</div>`);
 	await state(['cancel', 'delete', 'save']);
 }
