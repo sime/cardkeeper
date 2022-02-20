@@ -119,6 +119,60 @@ async function card_keeper() {
 	}
 }
 
+class ZKBarcodeDetector {
+	canvas = document.createElement('canvas');
+	ctx = this.canvas.getContext('2d');
+	cpp_buffer = null;
+	free() {
+		zxing_prom.then(zxing => {
+			zxing._free(this.cpp_buffer);
+			this.cpp_buffer = null;
+		});
+	}
+	async detect(source) {
+		const zxing = await zxing_prom;
+
+		if (source.videoWidth === 0 || source.videoHeight === 0) {
+			return [];
+		} else if (source.videoWidth !== this.canvas.width) {
+			this.canvas.width = source.videoWidth;
+			this.canvas.height = source.videoHeight;
+			if (this.cpp_buffer) {
+				this.free();
+			}
+		}
+		this.ctx.drawImage(source, 0, 0);
+
+		const img_data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+		if (this.cpp_buffer === null) {
+			this.cpp_buffer = zxing._malloc(img_data.data.length);
+		}
+		// Copy the img_data into the cpp_buffer
+		zxing.HEAPU8.set(img_data.data, this.cpp_buffer);
+
+		// TODO: Ask ZXing to find a barcode.
+		let result = zxing.readBarcodeFromPixmap(
+			this.cpp_buffer, // Buffer Pointer
+			img_data.width,  // Width
+			img_data.height, // Height
+			true,            // TryHarder (Try to find barcodes in flipped / rotate images I think)
+			''               // Barcode format to look for: an empty string means look for anything.
+		)
+
+		if (result.error) {
+			throw new Error(result.error);
+		}
+		if (result.format) {
+			return [{
+				format: result.format,
+				rawValue: result.text
+			}];
+		} else {
+			return [];
+		}
+	}
+}
+
 // Edit card view
 async function edit_card(card, is_new = false) {
 	let t_save_card, t_delete_card, t_cancel;
@@ -287,7 +341,6 @@ async function view_card(card) {
 	const zxing = await zxing_prom;
 
 	const res = zxing.generateBarcode(card.rawValue, card.format);
-	console.log(res);
 	if (res.error != '') {
 		throw new Error(res.error);
 	} else {
@@ -326,10 +379,7 @@ async function add_card() {
 	const video = document.createElement('video');
 	video.classList.add('image-capture');
 
-	if (!('BarcodeDetector' in window)) {
-		throw new Error("BarcodeDetector unsupported");
-	}
-	const detector = new BarcodeDetector();
+	const detector = ('BarcodeDetector' in window) ? new BarcodeDetector() : new ZKBarcodeDetector();
 
 	mount(html`
 		<div class="top-actions">
@@ -389,6 +439,9 @@ async function add_card() {
 		}
 
 		try {
+			// Rate limit detection to at most once per frame
+			await new Promise(resolve => requestAnimationFrame(resolve));
+
 			// STATE: detect
 			const barcodes = await detector.detect(video);
 			if (barcodes.length > 0) {
@@ -404,7 +457,7 @@ async function add_card() {
 	}
 	if (track) track.stop();
 	video.pause();
-	if (!quit) {
+	if (barcode) {
 		// Create the barcode
 		const card = new Card(barcode);
 		await edit_card(card, true);

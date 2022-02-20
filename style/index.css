@@ -296,7 +296,6 @@ button.cancel-btn {
 	height: 100vh;
 	object-fit: cover;
 	z-index: 1;
-	mask: url(/assets/camera-overlay.svg#m1);
 }
 
 button:not(#card-color).icon-btn.sc-btn {
