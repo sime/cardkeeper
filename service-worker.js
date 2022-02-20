@@ -31,6 +31,7 @@ const offline_assets = [
 	'js/card.mjs',
 	'js/index.mjs',
 	'js/lib/get-or-set.mjs',
+	'js/lib/machine.mjs',
 	'js/lib/trait.mjs',
 	'js/onboarding.mjs',
 	'js/templating/apply-expression.mjs',

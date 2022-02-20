@@ -1,6 +1,7 @@
 import { Card } from './card.mjs';
 import { mount, save, html, on } from './templating/index.mjs';
 import onboarding from './onboarding.mjs';
+import { machine, SkipTransition } from './lib/machine.mjs';
 
 
 const zxing_prom = ZXing();
@@ -65,32 +66,21 @@ try {
 
 // Root view
 async function card_keeper() {
+	const {state, transition} = machine();
 	while(true) {
 		const cards = Card.get_cards();
-		let update = false;
 
 		if (cards.length == 0) {
-			// STATE: onboarding, TRANSITIONS: [onboarding_done]
 			await onboarding();
-
 			await add_card();
 		} else {
-			let t_add_card, t_view_card;
 			mount(html`
 				<h1>Card Keeper</h1>
-				<ul class="card-list" ${e => {
-					t_view_card = new Promise(resolve => {
-						function click_handler(ev) {
-							const card_el = ev.target.closest('li');
-							const card_id = card_el?.dataset['cardid'];
-							if (card_id) {
-								resolve(new Card(card_id));
-								e.removeEventListener('click', click_handler);
-							}
-						}
-						e.addEventListener('click', click_handler);
-					}).then(c => view_card(c));
-				}}>
+				<ul class="card-list" ${on('click', transition('view_card', ({target}) => {
+					const card_id = target.closest('li')?.dataset['cardid'];
+					if (!card_id) return SkipTransition;
+					return new Card(card_id);
+				}))}>
 				${cards.map(card => html`
 					<li ${e => {
 						e.dataset['cardid'] = card.id;
@@ -102,18 +92,21 @@ async function card_keeper() {
 					</li>
 				`)}
 				</ul>
-				<button ${e => {
-					t_add_card = new Promise(resolve => {
-						on('click', resolve, {once: true})(e);
-					}).then(_ => add_card());
-				}}>Add Card <img width="28" height="28" src="/assets/button-plus.svg"></button>
+				<button ${on('click', transition('add_card'), {once: true})}>
+					Add Card
+					<img width="28" height="28" src="/assets/button-plus.svg">
+				</button>
 			`);
 
-			await Promise.race([t_view_card, t_add_card, t_sw_update.then(_ => update = true)]);
+			const result = await state(['view_card', 'add_card'], t_sw_update.then(() => 'update'));
 
-			if (update) {
+			if (result == 'update') {
 				location.reload();
 				break;
+			} else if (result instanceof Card) {
+				await view_card(result);
+			} else {
+				await add_card();
 			}
 		}
 	}
@@ -175,24 +168,19 @@ class ZXBarcodeDetector {
 
 // Edit card view
 async function edit_card(card, is_new = false) {
-	let t_save_card, t_delete_card, t_cancel;
+	const {state, transition} = machine();
 	let card_preview;
 	mount(html`
-	<button class="cancel-btn" ${e => {
-		t_cancel = new Promise(resolve => {
-			e.addEventListener('click', () => {
-				if (is_new) card.delete();
-				resolve();
-			}, {once: true});
-		});
-	}}>
+	<button class="cancel-btn" ${on('click', transition('cancel', () => {
+		if (is_new) card.delete();
+	}), {once: true})}>
 		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 			<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 		</svg>
 		Cancel
 	</button>
-	${() => is_new ? html`<p class="saved-notif">New Card Saved!</p>` : null}
+	${is_new ? html`<p class="saved-notif">New Card Saved!</p>` : null}
 	<div class="card-preview" ${e => {card_preview = e}}>
 		<span class="card-data">
 			${format_rawValue(card)}
@@ -215,9 +203,7 @@ async function edit_card(card, is_new = false) {
 			e.innerText = color.name;
 			card_preview.style.backgroundColor = color.value;
 		};
-		e.addEventListener('click', async ev => {
-			ev.preventDefault();
-			e.blur();
+		e.addEventListener('click', async () => {
 			let t = save();
 			card.color = await color_picker(card.color);
 			mount(t);
@@ -227,38 +213,20 @@ async function edit_card(card, is_new = false) {
 	}}></button>
 	<div class="filler"></div>
 	<div class="btn-group">
-		<button class="icon-btn" ${e => {
-			t_delete_card = new Promise(resolve => {
-				e.addEventListener('click', () => {
-					card.delete();
-					resolve();
-				}, {once: true});
-			});
-		}}><img src="/assets/trash.svg"></button>
-		<button ${e => {
-			t_save_card = new Promise(resolve => {
-				e.addEventListener('click', () => {
-					card.save();
-					resolve();
-				}, {once: true});
-			});
-		}}>Save Card</button>
+		<button class="icon-btn" ${on('click', transition('delete', () => card.delete()), {once: true})}>
+			<img src="/assets/trash.svg">
+			</button>
+		<button ${on('click', transition('save', () => card.save()))}>Save Card</button>
 	</div>`);
-	await Promise.race([t_cancel, t_save_card, t_delete_card]);
+	await state(['cancel', 'delete', 'save']);
 }
 
 async function color_picker(initial_color_index) {
-	let t_cancel, t_save;
+	const {state, transition} = machine();
 	let color = initial_color_index;
 	let preview;
 	mount(html`
-		<button class="cancel-btn" ${e => {
-			t_cancel = new Promise(resolve => {
-				e.addEventListener('click', () => {
-					resolve(initial_color_index);
-				}, {once: true});
-			});
-		}}>
+		<button class="cancel-btn" ${on('click', transition('cancel', () => initial_color_index), {once: true})}>
 			<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 				<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -285,29 +253,22 @@ async function color_picker(initial_color_index) {
 			`)}
 		</fieldset>
 		<div class="btn-group">
-			<button ${e => {
-				t_save = new Promise(resolve => {
-					e.addEventListener('click', () => {
-						resolve(color);
-					}, {once: true});
-				});
-			}}>Save Colour</button>
+			<button ${on('click', transition('save', () => color), {once: true})}>Save Colour</button>
 		</div>
 	`);
-	return await Promise.race([t_cancel, t_save]);
+	return await state(['cancel', 'save']);
 }
 
 // Display card view
 async function view_card(card) {
+	const {state, transition} = machine();
+
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d');
 	// TODO: Make these scale for barcodes with more data?  Or maybe make it the Min(device width, device height)?
 
-	let t_edit_card, t_back;
 	mount(html`
-	<button class="cancel-btn" ${e => {
-		t_back = new Promise(res => on('click', res, {once: true})(e));
-	}}>
+	<button class="cancel-btn" ${on('click', transition('cancel'))}>
 		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 			<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -331,11 +292,7 @@ async function view_card(card) {
 		
 	</div>
 
-	<button ${e => {
-		t_edit_card = new Promise(res => on('click', res, {once: true})(e)).then(_ => 
-			edit_card(card)
-		);
-	}}>Edit Card <img src="/assets/edit-icon.svg"></button>
+	<button ${on('click', transition('edit'), {once: true})}>Edit Card <img src="/assets/edit-icon.svg"></button>
 	`);
 
 	const zxing = await zxing_prom;
@@ -366,7 +323,10 @@ async function view_card(card) {
 		}
 	}
 
-	await Promise.race([t_edit_card, t_back]);
+	const result = await state(['cancel', 'edit']);
+	if (result == 'edit') {
+		await edit_card(card);
+	}
 }
 
 // Add card view
