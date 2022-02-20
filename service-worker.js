@@ -34,6 +34,7 @@ const offline_assets = [
 	'js/lib/machine.mjs',
 	'js/lib/trait.mjs',
 	'js/onboarding.mjs',
+	'js/reactivity.mjs',
 	'js/templating/apply-expression.mjs',
 	'js/templating/create-template.mjs',
 	'js/templating/descendant-path.mjs',
