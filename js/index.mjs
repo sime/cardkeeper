@@ -420,11 +420,15 @@ async function add_card() {
 					}
 				};
 			}
-
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: video_constraints,
-				audio: false
-			});
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({
+					video: video_constraints,
+					audio: false
+				});
+			} catch (e) {
+				alert("Failed to get camera access");
+				return;
+			}
 
 			video.srcObject = stream;
 			await video.play();
