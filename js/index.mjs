@@ -457,6 +457,10 @@ async function add_card() {
 	}
 	if (track) track.stop();
 	video.pause();
+
+	// Used by the zxing detector to free the cpp image buffer
+	if (detector.free) detector.free();
+	
 	if (barcode) {
 		// Create the barcode
 		const card = new Card(barcode);
