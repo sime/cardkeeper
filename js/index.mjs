@@ -186,7 +186,6 @@ async function edit_card(card, is_new = false) {
 		</svg>
 		Cancel
 	</button>
-	${is_new ? html`<p class="saved-notif">New Card Saved!</p>` : null}
 	<div class="card-preview" ${use_later(el => {
 		el.style.backgroundColor = card_colors[color()].value;
 	})}>
@@ -195,7 +194,7 @@ async function edit_card(card, is_new = false) {
 		</span>
 	</div>
 	<label for="card-name">Card Name:</label>
-	<input type="text" id="card-name" value="${name()}" placeholder="Name your card" ${on('change', ({target}) => set_name(target.value))}>
+	<input type="text" id="card-name" value="${name()}" placeholder="Name your card" ${on('change', ({target}) => set_name(target.value))} ${e => {if (is_new) e.focus();}}>
 	<label for="card-color">Card Colour:</label>
 	<button id="card-color" ${[
 		use_later(e => e.style.setProperty('--swatch-color', card_colors[color()].disp)),
@@ -207,7 +206,13 @@ async function edit_card(card, is_new = false) {
 	]}>${text(use_later(t => t.data = card_colors[color()].name))}</button>
 	<div class="filler"></div>
 	<div class="btn-group">
-		<button class="icon-btn" ${on('click', transition('delete', () => card.delete()), {once: true})}>
+		<button class="icon-btn" ${on('click', transition('delete', () => {
+			if (window.confirm("Do you want to delete this card?")) {
+				card.delete();
+			} else {
+				return SkipTransition;
+			}
+		}))}>
 			<img src="/assets/trash.svg">
 			</button>
 		<button ${on('click', transition('save', () => {
