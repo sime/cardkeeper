@@ -221,26 +221,21 @@ async function edit_card(card, is_new = false) {
 
 async function color_picker(initial_color_index) {
 	const {state, transition} = machine();
-	let color = initial_color_index;
-	let preview;
+
+	const [color, set_color] = signal(initial_color_index);
+
 	mount(html`
-		<button class="cancel-btn" ${on('click', transition('cancel', () => initial_color_index), {once: true})}>
+		<button class="cancel-btn" ${on('click', transition('done', () => color()), {once: true})}>
 			<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 				<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 			</svg>
-			Cancel
+			Done
 		</button>
-		<div class="color-preview" ${e => {
-			preview = e;
-			e.style.setProperty('--picker-color', card_colors[color].value);
-		}}></div>
-		<fieldset class="color-picker" ${e => {
-			e.addEventListener('change', ev => {
-				color = ev.target.value;
-				preview.style.setProperty('--picker-color', card_colors[color].value);
-			});
-		}}>
+		<div class="color-preview" ${use_later(e => {
+			e.style.setProperty('--picker-color', card_colors[color()].value);
+		})}></div>
+		<fieldset class="color-picker" ${on('change', ({target}) => set_color(target.value))}>
 			<legend>Select Card Colour</legend>
 			${card_colors.map((c, i) => html`
 				<input name="color_index" type="radio" ${e => {
@@ -250,11 +245,8 @@ async function color_picker(initial_color_index) {
 				}}>
 			`)}
 		</fieldset>
-		<div class="btn-group">
-			<button ${on('click', transition('save', () => color), {once: true})}>Save Colour</button>
-		</div>
 	`);
-	return await state(['cancel', 'save']);
+	return await state(['done']);
 }
 
 // Display card view
