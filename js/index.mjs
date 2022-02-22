@@ -59,6 +59,40 @@ if ('serviceWorker' in navigator) {
 	});
 }
 
+const [installPromptEvent, set_installPromptEvent] = signal(false);
+window.addEventListener('beforeinstallprompt', e => {
+	e.preventDefault();
+	set_installPromptEvent(e);
+}, {once: true});
+function update_backoff(response = "dismissed") {
+	if (response == "accepted") {
+		localStorage.removeItem('install-prompt');
+	} else {
+		const last_try = localStorage.getItem('install-prompt');
+		let new_delay = 1;
+		if (last_try) {
+			const {delay} = JSON.parse(last_try);
+			new_delay = delay * (1 + Math.sqrt(5)) / 2;
+		}
+		localStorage.setItem('install-prompt', JSON.stringify({
+			date: Date.now(),
+			delay: new_delay
+		}));
+	}
+}
+function backoff_is_up() {
+	const last_try = localStorage.getItem('install-prompt');
+	if (last_try) {
+		let {date, delay} = JSON.parse(last_try);
+		date = new Number(date);
+		delay = new Number(delay);
+		const diff = Date.now() - date;
+		return diff > 24 * 60 * 60 * 1000 * delay;
+	} else {
+		return true;
+	}
+}
+
 // Run the app:
 try {
 	card_keeper();
@@ -93,6 +127,37 @@ async function card_keeper() {
 						<p class="card-data">${format_rawValue(card)}</p>
 					</li>
 				`)}
+				${use_later(e => {
+					if (backoff_is_up() && cards.length >= 2 && installPromptEvent()) {
+						e.replaceWith(html`
+							<li class="install-prompt" ${e => {
+								e.addEventListener('click', async () => {
+									installPromptEvent().prompt();
+									set_installPromptEvent(false);
+									update_backoff(await installPromptEvent.userChoice);
+									e.remove();
+								});
+							}}>
+								<img src="/assets/install-icon.svg">
+								Add App to Homescreen
+								<button ${e => {
+									e.addEventListener('click', ev => {
+										ev.stopPropagation();
+										e.parentNode.remove();
+										update_backoff();
+									}, {once: true});
+								}}>
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<g opacity="0.6">
+											<path d="M18 6L6 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+											<path d="M6 6L18 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+										</g>
+									</svg>
+								</button>
+							</li>`
+						);
+					}
+				})}
 				</ul>
 				<button ${on('click', transition('add_card'), {once: true})}>
 					Add Card

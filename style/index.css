@@ -385,3 +385,19 @@ capture-overlay .view-finder {
     fill: transparent;
     stroke: red;
 }
+
+.card-list .install-prompt {
+    background: url(/assets/install-prompt-background.svg);
+    background-blend-mode: unset;
+    background-size: cover;
+    display: flex;
+    /* background-color: #515151; */
+    align-items: center;
+    justify-content: space-between;
+}
+
+.install-prompt button {
+    background-color: unset !important;
+    padding: unset !important;
+    height: unset !important;
+}

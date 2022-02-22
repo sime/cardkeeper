@@ -16,6 +16,8 @@ const offline_assets = [
 	'assets/flip-camera-icon.svg',
 	'assets/grocery-icon.svg',
 	'assets/gym-icon.svg',
+	'assets/install-icon.svg',
+	'assets/install-prompt-background.svg',
 	'assets/library-icon.svg',
 	'assets/offline-icon.svg',
 	'assets/onboard1.svg',
