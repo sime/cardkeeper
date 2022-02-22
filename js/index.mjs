@@ -375,8 +375,9 @@ async function add_card() {
 					}
 				};
 			}
+			let stream;
 			try {
-				const stream = await navigator.mediaDevices.getUserMedia({
+				stream = await navigator.mediaDevices.getUserMedia({
 					video: video_constraints,
 					audio: false
 				});
