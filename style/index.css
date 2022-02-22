@@ -70,8 +70,19 @@ fieldset {
 }
 input[type="radio"] {
 	appearance: none;
+	position: absolute;
 }
-.color-picker :checked {
+
+.color-picker label {
+	display: flex;
+	background-color: var(--picker-color);
+	height: 40px;
+	border-radius: 4px;
+	justify-content: center;
+	align-items: center;
+	color: rgb(0 0 0 / 60%);
+}
+.color-picker :checked + label {
 	outline: 2px solid black;
 	outline-offset: 8px;
 }
@@ -200,12 +211,6 @@ select, input[type="text"], button#card-color {
 	appearance: none;
 	background-color: white;
 	border: 1px solid #8C8C8C;
-}
-
-.color-picker input {
-	background-color: var(--picker-color);
-	height: 40px;
-	border-radius: 4px;
 }
 
 .color-preview {

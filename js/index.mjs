@@ -248,13 +248,18 @@ async function color_picker(initial_color_index) {
 		<fieldset class="color-picker" ${on('change', ({target}) => set_color(target.value))}>
 			<legend>Select Card Colour</legend>
 			${card_colors.map((c, i) => html`
-				<input name="color_index" type="radio" ${e => {
-					if (i == initial_color_index) e.checked = true;
-					e.value = i;
-					e.style.setProperty('--picker-color', c.disp);
-				}}>
+				<div>
+					<input id="${`checkbox-${c.name}`}" name="color_index" type="radio" ${e => {
+						if (i == initial_color_index) e.checked = true;
+						e.value = i;
+					}}>
+					<label for="${`checkbox-${c.name}`}" ${e => e.style.setProperty('--picker-color', c.disp)}>
+						${c.name}
+					</label>
+				</div>
 			`)}
 		</fieldset>
+		<div class="spacer"></div>
 	`);
 	return await state(['done']);
 }
