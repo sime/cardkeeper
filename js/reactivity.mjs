@@ -1,14 +1,17 @@
 let context = null;
 
 export function use(func) {
-	use_later(func)();
+	const old_context = context;
+	context = func;
+	func();
+	context = old_context;
 }
 export function use_later(func) {
 	return (...args) => {
-		const old_context = context;
-		context = func;
-		func(...args);
-		context = old_context;
+		const context_func = () => {
+			func(...args);
+		};
+		use(context_func);
 	};
 }
 
