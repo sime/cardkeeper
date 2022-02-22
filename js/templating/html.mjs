@@ -15,18 +15,12 @@ export function make_html(apply_e = apply_expression) {
 		const fragment = document.importNode(template.content, true);
 
 		// Apply our expressions:
-		const exprs = expressions[Symbol.iterator]();
-		const nodes = descend_paths(paths, fragment);
-		while (true) {
-			const {value: expr, done: e_done} = exprs.next();
-			const {value: node, done: n_done} = nodes.next();
-			if (e_done !== n_done) {
-				throw new Error("A different Number of expressions from parts was found while instantiating: This usually means an html syntax error in the template literal, but can also mean a problem caused by permitted content.");
-			} else if (e_done) {
-				break;
-			}
-
-			apply_e(expr, node);
+		const parts = [...descend_paths(paths, fragment)];
+		if (expressions.length !== parts.length) {
+			throw new Error("A different Number of expressions from parts was found while instantiating: This usually means an html syntax error in the template literal, but can also mean a problem caused by permitted content.");
+		}
+		for (let i = 0; i < expressions.length; ++i) {
+			apply_e(expressions[i], parts[i]);
 		}
 		return fragment;
 	}
