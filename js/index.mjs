@@ -191,7 +191,15 @@ async function edit_card(card) {
 		</span>
 	</div>
 	<label for="card-name">Card Name:</label>
-	<input type="text" id="card-name" value="${name()}" placeholder="Name your card" ${on('change', ({target}) => set_name(target.value))} ${e => {if (is_new) e.focus();}}>
+	<input type="text" id="card-name" value="${name()}" placeholder="Name your card" ${[
+		on('change', ({target}) => set_name(target.value)),
+		e => {if (card.name == '') {
+			queueMicrotask(() => {
+				// We have to do this in a microtask because the template isn't attached to the dom yet.
+				e.focus();
+			})
+		}}
+	]}>
 	<label for="card-color">Card Colour:</label>
 	<button id="card-color" ${[
 		use_later(e => e.style.setProperty('--swatch-color', card_colors[color()].disp)),
