@@ -303,7 +303,7 @@ button:not(#card-color).icon-btn.sc-btn {
 	border: none;
 }
 
-img.capture-overlay {
+.capture-overlay {
 	position: fixed;
 	left: 0;
 	top: 0;
@@ -374,4 +374,9 @@ p.capture-status {
 .card-display h2 {
 	font-weight: 700;
 	font-size: 25px;
+}
+
+capture-overlay .view-finder {
+    fill: transparent;
+    stroke: red;
 }

@@ -6,7 +6,6 @@ const offline_assets = [
 	'/',
 	'assets/button-arrow.svg',
 	'assets/button-plus.svg',
-	'assets/camera-overlay.svg',
 	'assets/camera.svg',
 	'assets/card-full.svg',
 	'assets/card-half.svg',

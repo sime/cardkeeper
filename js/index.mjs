@@ -341,6 +341,8 @@ async function add_card() {
 
 	const detector = ('BarcodeDetector' in window) ? new BarcodeDetector() : new ZXBarcodeDetector();
 
+	const [track, set_track] = signal(false);
+
 	mount(html`
 		<div class="top-actions">
 			<button class="cancel-btn" ${on('click', () => {quit = true})}>
@@ -354,14 +356,44 @@ async function add_card() {
 		</div>
 		<p class="camera-request">Requesting Camera Access...</p>
 		${video}
-		<img class="capture-overlay" src="/assets/camera-overlay.svg">
+		<svg xmlns="http://www.w3.org/2000/svg" class="capture-overlay" ${use_later(e => {
+			if (track()) e.classList.add('active');
+			else e.classList.remove('active');
+		})}>
+			<mask id="m1">
+				<rect fill="white" width="100%" height="100%"/>
+				<rect fill="black" rx="40" ry="40" x="50%" y="50%" width="260" height="260" transform="translate(-130, -130)"/>
+			</mask>
+			<rect mask="url(#m1)" fill="black" fill-opacity="0.6" width="100%" height="100%"/>
+			<rect class="view-finder" rx="40" ry="40" x="50%" y="50%" width="260" height="260" transform="translate(-130, -130)"/>
+			<style>
+				@keyframes beat {
+					from {
+						stroke: transparent;
+					}
+					100% {
+						stroke: red;
+					}
+				}
+				.view-finder {
+					fill: transparent;
+				}
+				.capture-overlay.active .view-finder {
+					animation: beat 2s infinite alternate;
+				}
+			</style>
+		</svg>
+
 		<p class="capture-status">Place barcode inside the area</p>
 	`, "capture");
 
-	let barcode, track;
+	let barcode;
 	while (!quit && !barcode) {
 		if (switch_camera) {
-			if (track) track.stop();
+			if (track()) {
+				track().stop();
+				set_track(false);
+			}
 			switch_camera = false;
 
 			let video_constraints = {
@@ -396,11 +428,11 @@ async function add_card() {
 
 			// Set the camera's properties (width / height) to the canvas
 			// MAYBE: Get the width / height from the video element?
-			track = stream.getVideoTracks()[0];
-			if (!track) {
+			set_track(stream.getVideoTracks()[0]);
+			if (!track()) {
 				throw new Error("No video track in the stream!");
 			}
-			deviceId = track.getSettings().deviceId;
+			deviceId = track().getSettings().deviceId;
 		}
 
 		try {
@@ -420,7 +452,7 @@ async function add_card() {
 			}
 		}
 	}
-	if (track) track.stop();
+	if (track()) track().stop();
 	video.pause();
 
 	// Used by the zxing detector to free the cpp image buffer
