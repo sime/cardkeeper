@@ -14,7 +14,7 @@ export class Card {
 			this.rawValue = idOrBarcode.rawValue;
 			this.name = "";
 			this.color = 0;
-			this.save();
+			// this.save();
 		} else {
 			throw "";
 		}

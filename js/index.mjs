@@ -169,17 +169,14 @@ class ZXBarcodeDetector {
 }
 
 // Edit card view
-async function edit_card(card, is_new = false) {
+async function edit_card(card) {
 	const {state, transition} = machine();
 
 	const [name, set_name] = signal(card.name);
 	const [color, set_color] = signal(card.color);
 
-	let card_preview;
 	mount(html`
-	<button class="cancel-btn" ${on('click', transition('cancel', () => {
-		if (is_new) card.delete();
-	}), {once: true})}>
+	<button class="cancel-btn" ${on('click', transition('cancel'), {once: true})}>
 		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 			<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
