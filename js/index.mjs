@@ -240,6 +240,12 @@ async function edit_card(card) {
 	const [name, set_name] = signal(card.name);
 	const [color, set_color] = signal(card.color);
 
+	async function pick_color() {
+		let t = save();
+		set_color(await color_picker(color()));
+		mount(t);
+	}
+
 	mount(html`
 	<button class="cancel-btn" ${on('click', transition('cancel'), {once: true})}>
 		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -248,9 +254,11 @@ async function edit_card(card) {
 		</svg>
 		Cancel
 	</button>
-	<div class="card-preview" ${use_later(el => {
-		el.style.backgroundColor = card_colors[color()].value;
-	})}>
+	<div class="card-preview" ${[
+		on('click', pick_color),
+		use_later(el => {
+			el.style.backgroundColor = card_colors[color()].value;
+	})]}>
 		<span class="card-data">
 			${format_rawValue(card)}
 		</span>
@@ -268,11 +276,7 @@ async function edit_card(card) {
 	<label for="card-color">Card Colour:</label>
 	<button id="card-color" ${[
 		use_later(e => e.style.setProperty('--swatch-color', card_colors[color()].disp)),
-		on('click', async () => {
-			let t = save();
-			set_color(await color_picker(color()));
-			mount(t);
-		})
+		on('click', pick_color)
 	]}>${text(use_later(t => t.data = card_colors[color()].name))}</button>
 	<div class="filler"></div>
 	<div class="btn-group">
