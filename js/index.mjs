@@ -450,53 +450,51 @@ async function add_card() {
 
 	let barcode;
 	while (!quit && !barcode) {
-		if (switch_camera) {
-			if (track()) {
-				track().stop();
-				set_track(false);
-			}
-			switch_camera = false;
-
-			let video_constraints = {
-				// The default constraints for the camera is to choose the back camera
-				facingMode: "environment"
-			};
-			if (deviceId) {
-				let devices = await navigator.mediaDevices.enumerateDevices();
-				devices = devices.filter(d => d.kind == 'videoinput').map(d => d.deviceId);
-				let cur_idx = devices.indexOf(deviceId);
-				let next_idx = (cur_idx + 1) % devices.length;
-				const id = devices[next_idx];
-				video_constraints = {
-					deviceId: {
-						exact: id
-					}
-				};
-			}
-			let stream;
-			try {
-				stream = await navigator.mediaDevices.getUserMedia({
-					video: video_constraints,
-					audio: false
-				});
-			} catch (e) {
-				alert("Failed to get camera access");
-				return;
-			}
-
-			video.srcObject = stream;
-			await video.play();
-
-			// Set the camera's properties (width / height) to the canvas
-			// MAYBE: Get the width / height from the video element?
-			set_track(stream.getVideoTracks()[0]);
-			if (!track()) {
-				throw new Error("No video track in the stream!");
-			}
-			deviceId = track().getSettings().deviceId;
-		}
-
 		try {
+			if (switch_camera) {
+				if (track()) {
+					track().stop();
+					set_track(false);
+				}
+				switch_camera = false;
+	
+				let video_constraints = {
+					// The default constraints for the camera is to choose the back camera
+					facingMode: "environment"
+				};
+				if (deviceId) {
+					let devices = await navigator.mediaDevices.enumerateDevices();
+					devices = devices.filter(d => d.kind == 'videoinput').map(d => d.deviceId);
+					let cur_idx = devices.indexOf(deviceId);
+					let next_idx = (cur_idx + 1) % devices.length;
+					const id = devices[next_idx];
+					video_constraints = {
+						deviceId: {
+							exact: id
+						}
+					};
+				}
+				let stream;
+				try {
+					stream = await navigator.mediaDevices.getUserMedia({
+						video: video_constraints,
+						audio: false
+					});
+				} catch (e) {
+					throw new Error("Unable to get camera access");
+				}
+	
+				video.srcObject = stream;
+				await video.play();
+	
+				// Set the camera's properties (width / height) to the canvas
+				// MAYBE: Get the width / height from the video element?
+				set_track(stream.getVideoTracks()[0]);
+				if (!track()) {
+					throw new Error("No video track in the stream.");
+				}
+				deviceId = track().getSettings().deviceId;
+			}
 			// Rate limit detection to at most once per frame
 			await new Promise(resolve => requestAnimationFrame(resolve));
 
@@ -506,11 +504,9 @@ async function add_card() {
 				barcode = barcodes[0];
 			}
 		} catch (e) {
-			if (e.name === 'NotSupportedError') {
-				throw new Error("Barcode Detection isn't supported");
-			} else {
-				throw e;
-			}
+			console.error(e);
+			alert(e.toString());
+			break;
 		}
 	}
 	if (track()) track().stop();
