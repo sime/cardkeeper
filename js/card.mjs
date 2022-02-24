@@ -1,3 +1,5 @@
+import { card_colors } from "./card-colors.mjs";
+
 export class Card {
 	constructor(idOrBarcode) {
 		if (typeof idOrBarcode == 'string') {
@@ -13,7 +15,7 @@ export class Card {
 			this.format = idOrBarcode.format;
 			this.rawValue = idOrBarcode.rawValue;
 			this.name = "";
-			this.color = 0;
+			this.color = Math.floor(Math.random() * card_colors.length);
 			// this.save();
 		} else {
 			throw "";

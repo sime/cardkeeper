@@ -4,22 +4,12 @@ import onboarding from './onboarding.mjs';
 import { machine, SkipTransition } from './lib/machine.mjs';
 import { signal, use, use_later } from './reactivity.mjs';
 import { text } from './templating/expressions.mjs';
+import { card_colors } from './card-colors.mjs';
 
 
 const zxing_prom = ZXing();
 
-const card_colors = [
-	{ name: "Blue",   disp: "#608DFF", value: "#0031AF" },
-	{ name: "Purple", disp: "#D9A7FF", value: "#681CA2" },
-	{ name: "Pink",   disp: "#FFB9EB", value: "#A82783" },
-	{ name: "Golden", disp: "#FFD056", value: "#B8992B" },
-	{ name: "Green",  disp: "#C1FF90", value: "#4D871F" },
-	{ name: "Teal",   disp: "#92DEFF", value: "#1A779F" },
-	{ name: "Red",    disp: "#FE8D8D", value: "#A70E0E" },
-	{ name: "Brown",  disp: "#FFAC7D", value: "#96491F" },
-	{ name: "Lime",   disp: "#E8F34F", value: "#696E1C" },
-	{ name: "Tosca",  disp: "#78F4C7", value: "#2B8665" },
-];
+
 // a list of formats is: https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API#supported_barcode_formats
 const supported_barcode_formats = [
 	'code_128',
