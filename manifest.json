@@ -9,14 +9,19 @@
 	"description": "An app for storing your loyalty and membership cards so you can always have them with you.",
 	"icons": [{
 		"src": "icons/home.svg",
-		"sizes": "512x512",
+		"sizes": "any",
 		"type": "image/svg",
-		"purpose": "any"
+		"purpose": "any maskable"
 	}, {
-		"src": "icons/home.svg",
+		"src": "icons/home-512.png",
 		"sizes": "512x512",
-		"type": "image/svg",
-		"purpose": "maskable"
+		"type": "image/png",
+		"purpose": "any maskable"
+	}, {
+		"src": "icons/home-192.png",
+		"sizes": "192x192",
+		"type": "image/png",
+		"purpose": "any maskable"
 	}, {
 		"src": "icons/splash.png",
 		"sizes": "512x512",
