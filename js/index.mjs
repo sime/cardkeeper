@@ -94,7 +94,17 @@ try {
 async function card_keeper() {
 	const {state, transition} = machine();
 	while(true) {
-		const cards = Card.get_cards();
+		const cards = Card.get_cards().sort((a, b) => {
+			a = a.name.toLowerCase();
+			b = b.name.toLowerCase();
+			if (a < b) {
+				return -1;
+			} else if (a > b) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
 
 		if (cards.length == 0) {
 			await onboarding();
