@@ -4,6 +4,9 @@ const static_cache_name = 'static_assets-' + version;
 
 const offline_assets = [
 	'/',
+	'/add-card/',
+	'/edit-card/',
+	'/view-card/',
 	'assets/button-arrow.svg',
 	'assets/button-plus.svg',
 	'assets/camera.svg',
@@ -36,7 +39,7 @@ const offline_assets = [
 	'js/card.mjs',
 	'js/index.mjs',
 	'js/lib/get-or-set.mjs',
-	'js/lib/machine.mjs',
+	// 'js/lib/machine.mjs',
 	'js/lib/trait.mjs',
 	'js/onboarding.mjs',
 	'js/reactivity.mjs',
@@ -47,6 +50,7 @@ const offline_assets = [
 	'js/templating/html.mjs',
 	'js/templating/index.mjs',
 	'js/templating/mount.mjs',
+	'js/zxing.mjs',
 	'manifest.json',
 	'style/index.css',
 ];
@@ -70,7 +74,17 @@ self.addEventListener('activate', e => e.waitUntil((async () => {
 })()));
 
 self.addEventListener('fetch', e => {
-	e.respondWith(
-		caches.match(e.request).then(res => res || fetch(e.request)).catch(e => console.error(e))
-	);
+	const url = new URL(e.request.url);
+	url.search = '';
+	url.fragment = '';
+	async function respond() {
+		const match = await caches.match(url.toString());
+		if (!match) {
+			return await fetch(e.request);
+		} else {
+			return match;
+		}
+
+	}
+	e.respondWith(respond());
 });

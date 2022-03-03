@@ -3,7 +3,9 @@ import { card_colors } from "./card-colors.mjs";
 export class Card {
 	constructor(idOrBarcode) {
 		if (typeof idOrBarcode == 'string') {
-			const {format, rawValue, name, color} = JSON.parse(localStorage.getItem(idOrBarcode));
+			const stored = localStorage.getItem(idOrBarcode);
+			if (stored == undefined) throw new Error();
+			const {format, rawValue, name, color} = JSON.parse(stored);
 			this.format = format;
 			this.rawValue = rawValue;
 			this.name = name;

@@ -1,14 +1,10 @@
 import { Card } from './card.mjs';
 import { mount, save, html, on } from './templating/index.mjs';
 import onboarding from './onboarding.mjs';
-import { machine, SkipTransition } from './lib/machine.mjs';
-import { signal, use, use_later } from './reactivity.mjs';
+import { signal, use_later } from './reactivity.mjs';
 import { text } from './templating/expressions.mjs';
 import { card_colors } from './card-colors.mjs';
-
-
-const zxing_prom = ZXing();
-
+import { zxing_prom, ZXBarcodeDetector } from './zxing.mjs';
 
 // a list of formats is: https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API#supported_barcode_formats
 const supported_barcode_formats = [
@@ -29,24 +25,22 @@ function format_rawValue(card) {
 }
 
 // This transition occurs when a new service worker claims the page.
-const t_sw_update = new Promise(resolve => {
-	// I sometimes use an http dev server
-	if ('serviceWorker' in navigator) {
-		// TODO: use ServiceWorkerRegistration.onupdatefound instead?
-		let last_controller = navigator.serviceWorker.controller;
-		navigator.serviceWorker.addEventListener('controllerchange', () => {
-			if (last_controller) resolve();
-			last_controller = navigator.serviceWorker.controller;
-		});
-	} else {
-		console.error("no service worker support.");
-	}
-});
-// Setup service worker
+let has_update = false;
+
 if ('serviceWorker' in navigator) {
+	// TODO: use ServiceWorkerRegistration.onupdatefound instead?
+	let last_controller = navigator.serviceWorker.controller;
+	navigator.serviceWorker.addEventListener('controllerchange', () => {
+		if (last_controller) has_update = true;
+		last_controller = navigator.serviceWorker.controller;
+	});
+
+	// Setup service worker
 	window.addEventListener('load', () => {
 		navigator.serviceWorker.register('/service-worker.js');
 	});
+} else {
+	console.error("no service worker support.");
 }
 
 const [installPromptEvent, set_installPromptEvent] = signal(false);
@@ -83,159 +77,141 @@ function backoff_is_up() {
 	}
 }
 
-// Run the app:
-try {
-	card_keeper();
-} catch (e) {
-	console.error(e);
+
+/**
+ * Navigation states:
+ * list-view (onboarding is just the list-view when no cards are currently saved) [/]:
+ * - add button -> push state: add-card
+ * - tap card -> push state: view-card
+ * add-card [/add-card/]:
+ * - scan card -> replace state: edit-card
+ * - back button -> pop state
+ * view-card [/view-card/?id=<card-id>]:
+ * - edit button -> ?replace state?: edit-card
+ * - back button -> pop state
+ * edit-card (color picker isn't a separate page) [/edit-card/?id=<card-id>]:
+ * - save button -> pop state
+ * - delete button -> pop state
+ * - back button -> pop state
+ */
+window.onpopstate = () => {
+	setTimeout(card_keeper, 0);
+};
+card_keeper();
+
+function card_keeper() {
+	const path = window.location.pathname;
+	if (path == '/' || path == '') /* List View */ {
+		list_cards();
+	} else if (path == '/add-card/') /* Add Card */ {
+		add_card();
+	} else if (path == '/view-card/') /* View Card */ {
+		view_card();
+	} else if (path == '/edit-card/') /* Edit Card */ {
+		edit_card();
+	} else {
+		console.error(new Error("Unknown view"));
+	}
 }
 
-// Root view
-async function card_keeper() {
-	const {state, transition} = machine();
-	while(true) {
-		const cards = Card.get_cards().sort((a, b) => {
-			a = a.name.toLowerCase();
-			b = b.name.toLowerCase();
-			if (a < b) {
-				return -1;
-			} else if (a > b) {
-				return 1;
-			} else {
-				return 0;
-			}
-		});
-
-		if (cards.length == 0) {
-			await onboarding();
-			await add_card();
+function list_cards() {
+	// Reload the page if there's an update
+	if (has_update) {
+		window.location.reload();
+	}
+	
+	const cards = Card.get_cards().sort((a, b) => {
+		a = a.name.toLowerCase();
+		b = b.name.toLowerCase();
+		if (a < b) {
+			return -1;
+		} else if (a > b) {
+			return 1;
 		} else {
-			mount(html`
-				<h1>Card Keeper</h1>
-				<ul class="card-list" ${on('click', transition('view_card', ({target}) => {
-					const card_id = target.closest('li')?.dataset['cardid'];
-					if (!card_id) return SkipTransition;
-					return new Card(card_id);
-				}))}>
-				${cards.map(card => html`
-					<li ${e => {
-						e.dataset['cardid'] = card.id;
-						const color = card_colors[card.color];
-						e.style.setProperty('--card-color', color.value);
-					}}>
-						<h2>${card.name}</h2>
-						<p class="card-data">${format_rawValue(card)}</p>
-					</li>
-				`)}
-				${use_later(e => {
-					if (backoff_is_up() && cards.length >= 2 && installPromptEvent()) {
-						e.replaceWith(html`
-							<li class="install-prompt" ${e => {
-								e.addEventListener('click', async () => {
-									installPromptEvent().prompt();
-									set_installPromptEvent(false);
-									update_backoff(await installPromptEvent.userChoice);
-									e.remove();
-								});
+			return 0;
+		}
+	});
+
+	if (cards.length == 0) {
+		// TODO: onboarding
+		onboarding().then(() => {
+			history.pushState({}, '', '/add-card/');
+			add_card();
+		});
+	} else {
+		mount(html`
+			<h1>Card Keeper</h1>
+			<ul class="card-list" ${on('click', ({target}) => {
+				const card_id = target.closest('li')?.dataset['cardid'];
+				if (card_id) {
+					window.history.pushState({}, '', `/view-card/?id=${card_id}`);
+					view_card();
+				}
+			})}>
+			${cards.map(card => html`
+				<li ${e => {
+					e.dataset['cardid'] = card.id;
+					const color = card_colors[card.color];
+					e.style.setProperty('--card-color', color.value);
+				}}>
+					<h2>${card.name}</h2>
+					<p class="card-data">${format_rawValue(card)}</p>
+				</li>
+			`)}
+			${use_later(e => {
+				if (backoff_is_up() && cards.length >= 2 && installPromptEvent()) {
+					e.replaceWith(html`
+						<li class="install-prompt" ${e => {
+							e.addEventListener('click', async () => {
+								installPromptEvent().prompt();
+								set_installPromptEvent(false);
+								update_backoff(await installPromptEvent.userChoice);
+								e.remove();
+							});
+						}}>
+							<img src="/assets/install-icon.svg">
+							Add App to Homescreen
+							<button ${e => {
+								e.addEventListener('click', ev => {
+									ev.stopPropagation();
+									e.parentNode.remove();
+									update_backoff();
+								}, {once: true});
 							}}>
-								<img src="/assets/install-icon.svg">
-								Add App to Homescreen
-								<button ${e => {
-									e.addEventListener('click', ev => {
-										ev.stopPropagation();
-										e.parentNode.remove();
-										update_backoff();
-									}, {once: true});
-								}}>
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<g opacity="0.6">
-											<path d="M18 6L6 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-											<path d="M6 6L18 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-										</g>
-									</svg>
-								</button>
-							</li>`
-						);
-					}
-				})}
-				</ul>
-				<button ${on('click', transition('add_card'), {once: true})}>
-					Add Card
-					<img width="28" height="28" src="/assets/button-plus.svg">
-				</button>
-			`);
-
-			const result = await state(['view_card', 'add_card'], t_sw_update.then(() => 'update'));
-
-			if (result == 'update') {
-				location.reload();
-				break;
-			} else if (result instanceof Card) {
-				await view_card(result);
-			} else {
-				await add_card();
-			}
-		}
+								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<g opacity="0.6">
+										<path d="M18 6L6 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+										<path d="M6 6L18 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+									</g>
+								</svg>
+							</button>
+						</li>`
+					);
+				}
+			})}
+			</ul>
+			<button ${on('click', () => {
+				window.history.pushState({}, '', '/add-card/');
+				add_card();
+			}, {once: true})}>
+				Add Card
+				<img width="28" height="28" src="/assets/button-plus.svg">
+			</button>
+		`);
 	}
 }
 
-class ZXBarcodeDetector {
-	canvas = document.createElement('canvas');
-	ctx = this.canvas.getContext('2d');
-	cpp_buffer = null;
-	free() {
-		zxing_prom.then(zxing => {
-			zxing._free(this.cpp_buffer);
-			this.cpp_buffer = null;
-		});
+function edit_card() {
+	const card_id = new URL(window.location).searchParams.get('id');
+	let card;
+	try {
+		card = new Card(card_id);
+	} catch {
+		// If the card doesn't exist then just go back to the card list.
+		history.replaceState({}, '', '/');
+		list_cards();
+		return;
 	}
-	async detect(source) {
-		const zxing = await zxing_prom;
-
-		if (source.videoWidth === 0 || source.videoHeight === 0) {
-			return [];
-		} else if (source.videoWidth !== this.canvas.width) {
-			this.canvas.width = source.videoWidth;
-			this.canvas.height = source.videoHeight;
-			if (this.cpp_buffer) {
-				this.free();
-			}
-		}
-		this.ctx.drawImage(source, 0, 0);
-
-		const img_data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-		if (this.cpp_buffer === null) {
-			this.cpp_buffer = zxing._malloc(img_data.data.length);
-		}
-		// Copy the img_data into the cpp_buffer
-		zxing.HEAPU8.set(img_data.data, this.cpp_buffer);
-
-		// TODO: Ask ZXing to find a barcode.
-		let result = zxing.readBarcodeFromPixmap(
-			this.cpp_buffer, // Buffer Pointer
-			img_data.width,  // Width
-			img_data.height, // Height
-			true,            // TryHarder (Try to find barcodes in flipped / rotate images I think)
-			''               // Barcode format to look for: an empty string means look for anything.
-		)
-
-		if (result.error) {
-			throw new Error(result.error);
-		}
-		if (result.format) {
-			return [{
-				format: result.format,
-				rawValue: result.text
-			}];
-		} else {
-			return [];
-		}
-	}
-}
-
-// Edit card view
-async function edit_card(card) {
-	const {state, transition} = machine();
 
 	const [name, set_name] = signal(card.name);
 	const [color, set_color] = signal(card.color);
@@ -247,7 +223,9 @@ async function edit_card(card) {
 	}
 
 	mount(html`
-	<button class="cancel-btn" ${on('click', transition('cancel'), {once: true})}>
+	<button class="cancel-btn" ${on('click', () => {
+		history.back();
+	}, {once: true})}>
 		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 			<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -280,60 +258,66 @@ async function edit_card(card) {
 	]}>${text(use_later(t => t.data = card_colors[color()].name))}</button>
 	<div class="filler"></div>
 	<div class="btn-group">
-		<button class="icon-btn" ${on('click', transition('delete', () => {
+		<button class="icon-btn" ${on('click', () => {
 			if (window.confirm("Do you want to delete this card?")) {
 				card.delete();
-			} else {
-				return SkipTransition;
+				history.back();
 			}
-		}))}>
+		})}>
 			<img src="/assets/trash.svg">
 			</button>
-		<button ${on('click', transition('save', () => {
+		<button ${on('click', () => {
 			card.color = color();
 			card.name = name();
 			card.save();
-		}))}>Save Card</button>
+			history.back();
+		})}>Save Card</button>
 	</div>`);
-	await state(['cancel', 'delete', 'save']);
+}
+function color_picker(initial_color_index) {
+	return new Promise(resolve => {
+		mount(html`
+			<div class="color-preview" ${e => {
+				e.style.setProperty('--picker-color', card_colors[initial_color_index].value);
+			}}></div>
+			<fieldset class="color-picker" ${on('change', ({target}) => resolve(target.value))}>
+				<legend>Select Card Colour</legend>
+				${card_colors.map((c, i) => html`
+					<div>
+						<input id="${`checkbox-${c.name}`}" name="color_index" type="radio" ${e => {
+							if (i == initial_color_index) e.checked = true;
+							e.value = i;
+						}}>
+						<label for="${`checkbox-${c.name}`}" ${e => e.style.setProperty('--picker-color', c.disp)}>
+							${c.name}
+						</label>
+					</div>
+				`)}
+			</fieldset>
+			<div class="spacer"></div>
+		`);
+	});
 }
 
-async function color_picker(initial_color_index) {
-	const {state, transition} = machine();
-
-	mount(html`
-		<div class="color-preview" ${e => {
-			e.style.setProperty('--picker-color', card_colors[initial_color_index].value);
-		}}></div>
-		<fieldset class="color-picker" ${on('change', transition('change-color', ({target}) => target.value))}>
-			<legend>Select Card Colour</legend>
-			${card_colors.map((c, i) => html`
-				<div>
-					<input id="${`checkbox-${c.name}`}" name="color_index" type="radio" ${e => {
-						if (i == initial_color_index) e.checked = true;
-						e.value = i;
-					}}>
-					<label for="${`checkbox-${c.name}`}" ${e => e.style.setProperty('--picker-color', c.disp)}>
-						${c.name}
-					</label>
-				</div>
-			`)}
-		</fieldset>
-		<div class="spacer"></div>
-	`);
-	return await state(['change-color']);
-}
-
-// Display card view
-async function view_card(card) {
-	const {state, transition} = machine();
+function view_card() {
+	const card_id = new URL(window.location).searchParams.get('id');
+	let card;
+	try {
+		card = new Card(card_id);
+	} catch {
+		// If the card doesn't exist then just go back to the card list.
+		history.replaceState({}, '', '/');
+		list_cards();
+		return;
+	}
 
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d');
-	// TODO: Make these scale for barcodes with more data?  Or maybe make it the Min(device width, device height)?
 
 	mount(html`
-	<button class="cancel-btn" ${on('click', transition('cancel'))}>
+	<button class="cancel-btn" ${on('click', () => {
+		window.history.back();
+	})}>
 		<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 			<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -357,44 +341,40 @@ async function view_card(card) {
 		
 	</div>
 
-	<button ${on('click', transition('edit'), {once: true})}>Edit Card <img src="/assets/edit-icon.svg"></button>
+	<button ${on('click', () => {
+		window.history.replaceState({}, '', `/edit-card/?id=${card_id}`);
+		edit_card();
+	}, {once: true})}>Edit Card <img src="/assets/edit-icon.svg"></button>
 	`);
-
-	const zxing = await zxing_prom;
-
-	const res = zxing.generateBarcode(card.rawValue, card.format);
-	if (res.error != '') {
-		throw new Error(res.error);
-	} else {
-		const data = res.data;
-		canvas.width = res.width;
-		if (res.height == 1) {
-			// Barcode
-			const bar_height = canvas.height = canvas.width * 0.5;
-			for (let x = 0; x < data.length; ++x) {
-				if (data[x] === 0) {
-					ctx.fillRect(x, 0, 1, bar_height);
-				}
-			}
+	zxing_prom.then(zxing => {
+		const res = zxing.generateBarcode(card.rawValue, card.format);
+		if (res.error != '') {
+			throw new Error(res.error);
 		} else {
-			canvas.height = res.height;
-			// Expand the bw data to rgba and then put the image data into the canvas
-			const expanded_data = new Uint8ClampedArray(data.length * 4);
-			for (let i = 0; i < data.length; ++i) {
-				// By default, typed arrays are filled with 0.  Which will be black with 0 opacity.  All we need to do is change the opacity to 1 for the bytes that are supposed to be black.
-				expanded_data[i * 4 + 3] = data[i] ? 0 : 255;
+			const data = res.data;
+			canvas.width = res.width;
+			if (res.height == 1) {
+				// Barcode
+				const bar_height = canvas.height = canvas.width * 0.5;
+				for (let x = 0; x < data.length; ++x) {
+					if (data[x] === 0) {
+						ctx.fillRect(x, 0, 1, bar_height);
+					}
+				}
+			} else {
+				canvas.height = res.height;
+				// Expand the bw data to rgba and then put the image data into the canvas
+				const expanded_data = new Uint8ClampedArray(data.length * 4);
+				for (let i = 0; i < data.length; ++i) {
+					// By default, typed arrays are filled with 0.  Which will be black with 0 opacity.  All we need to do is change the opacity to 1 for the bytes that are supposed to be black.
+					expanded_data[i * 4 + 3] = data[i] ? 0 : 255;
+				}
+				ctx.putImageData(new ImageData(expanded_data, canvas.width), 0, 0);
 			}
-			ctx.putImageData(new ImageData(expanded_data, canvas.width), 0, 0);
 		}
-	}
-
-	const result = await state(['cancel', 'edit']);
-	if (result == 'edit') {
-		await edit_card(card);
-	}
+	});
 }
 
-// Add card view
 async function add_card() {
 	let quit = false;
 	
@@ -522,6 +502,8 @@ async function add_card() {
 	if (barcode) {
 		// Create the barcode
 		const card = new Card(barcode);
-		await edit_card(card, true);
+		card.save();
+		history.replaceState({}, '', `/edit-card/?id=${card.id}`);
+		edit_card();
 	}
 }
