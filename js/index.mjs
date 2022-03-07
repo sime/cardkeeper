@@ -205,7 +205,7 @@ function list_cards() {
 				Add Card
 				<img width="28" height="28" src="/assets/button-plus.svg">
 			</button>
-		`);
+		`, 'list-view');
 	}
 }
 
@@ -353,7 +353,7 @@ function view_card() {
 		window.history.replaceState({}, '', `/edit-card/?id=${card_id}`);
 		edit_card();
 	}, {once: true})}>Edit Card <img src="/assets/edit-icon.svg"></button>
-	`);
+	`, 'view-card');
 	zxing_prom.then(zxing => {
 		const res = zxing.generateBarcode(card.rawValue, card.format);
 		if (res.error != '') {
