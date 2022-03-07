@@ -145,6 +145,37 @@ function list_cards() {
 			add_card();
 		});
 	} else {
+		function make_install(tag = 'li') {
+			const wrapper = document.createElement(tag);
+			wrapper.classList.add('install-prompt');
+			return use_later(e => {
+				if (backoff_is_up() && cards.length >= 2 && installPromptEvent()) {
+					e.replaceWith(wrapper);
+					e.addEventListener('click', async () => {
+						installPromptEvent().prompt();
+						set_installPromptEvent(false);
+						update_backoff(await installPromptEvent.userChoice);
+						e.remove();
+					});
+					wrapper.appendChild(html`<img src="/assets/install-icon.svg">
+					Add App to Homescreen
+					<button ${e => {
+						e.addEventListener('click', ev => {
+							ev.stopPropagation();
+							e.parentNode.remove();
+							update_backoff();
+						}, {once: true});
+					}}>
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<g opacity="0.6">
+								<path d="M18 6L6 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+								<path d="M6 6L18 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+							</g>
+						</svg>
+					</button>`);
+				}
+			});
+		}
 		mount(html`
 			<h1>Card Keeper</h1>
 			<ul class="card-list" ${on('click', ({target}) => {
@@ -164,39 +195,10 @@ function list_cards() {
 					<p class="card-data">${format_rawValue(card)}</p>
 				</li>
 			`)}
-			${use_later(e => {
-				if (backoff_is_up() && cards.length >= 2 && installPromptEvent()) {
-					e.replaceWith(html`
-						<li class="install-prompt" ${e => {
-							e.addEventListener('click', async () => {
-								installPromptEvent().prompt();
-								set_installPromptEvent(false);
-								update_backoff(await installPromptEvent.userChoice);
-								e.remove();
-							});
-						}}>
-							<img src="/assets/install-icon.svg">
-							Add App to Homescreen
-							<button ${e => {
-								e.addEventListener('click', ev => {
-									ev.stopPropagation();
-									e.parentNode.remove();
-									update_backoff();
-								}, {once: true});
-							}}>
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<g opacity="0.6">
-										<path d="M18 6L6 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-										<path d="M6 6L18 18" stroke="#DFDFDF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-									</g>
-								</svg>
-							</button>
-						</li>`
-					);
-				}
-			})}
+			${make_install('li')}
 			</ul>
-			<button ${on('click', () => {
+			${make_install('div')}
+			<button class="add-card-btn"  ${on('click', () => {
 				window.history.pushState({}, '', '/add-card/');
 				add_card();
 			}, {once: true})}>

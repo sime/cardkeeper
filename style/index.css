@@ -152,19 +152,21 @@ p.perm-warning {
 .card-list {
 	flex: 1 1;
 	display: flex;
-	overflow-y: scroll;
+	overflow-y: auto;
 	padding: 0;
 	color: white;
 	gap: 23px;
 	flex-direction: column;
 }
 .card-list li {
-	/* Stack the circles ontop of the card's color */
-	background: url("/assets/card-half.svg"), var(--card-color, #0031AF);
-	background-blend-mode: screen;
 	list-style: none;
 	border-radius: 16px 16px 0 0;
 	padding: 28px 19px 19px 19px;
+}
+.card-list [data-cardid] {
+	/* Stack the circles ontop of the card's color */
+	background: url("/assets/card-half.svg"), var(--card-color, #0031af);
+	background-blend-mode: screen;
 	background-size: cover;
 }
 
@@ -386,18 +388,66 @@ capture-overlay .view-finder {
     stroke: red;
 }
 
-.card-list .install-prompt {
+.install-prompt {
+	color: #dfdfdf;
     background: url(/assets/install-prompt-background.svg);
     background-blend-mode: unset;
     background-size: cover;
     display: flex;
-    /* background-color: #515151; */
     align-items: center;
     justify-content: space-between;
+}
+div.install-prompt {
+	display: none;
+	grid-area: f;
+	padding: 32px;
+	border-radius: 16px;
 }
 
 .install-prompt button {
     background-color: unset !important;
     padding: unset !important;
     height: unset !important;
+}
+
+@media (min-width: 750px) {
+	div.install-prompt {
+		display: flex;
+	}
+	li.install-prompt {
+		display: none;
+	}
+	main {
+		display: grid;
+		grid-template:
+			"ha hb" max-content
+			"c c" 1fr 
+			"f f" max-content / 1fr 1fr;
+		gap: 55px;
+		padding: 100px;
+	}
+	main > h1 {
+		grid-area: ha;
+	}
+	main > .add-card-btn {
+		grid-area: hb;
+		justify-self: end;
+		min-width: 300px;
+	}
+	.card-list {
+		grid-area: c;
+		display: grid;
+		grid-template: max-content / 1fr 1fr;
+		grid-auto-rows: max-content;
+		grid-auto-flow: row;
+		gap: 55px;
+	}
+}
+@media (min-width: 1400px) {
+	main {
+		padding: 176px;
+	}
+	.card-list {
+		grid-template: max-content / 1fr 1fr 1fr;
+	}
 }
