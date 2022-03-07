@@ -120,15 +120,21 @@ function list_cards() {
 		window.location.reload();
 	}
 	
+	// Sort cards by when they were added (This just means sorting by id because the id of the card always increases)
+	// By default (in Chrome at least) the local storage keys (as retrieved using localstorage.key(i)) are sorted by string.  But we want to sort by id which means sorting by length before sorting by string.  That makes sure that 'card.9' comes before 'card.10' even though 9 > 1.
 	const cards = Card.get_cards().sort((a, b) => {
-		a = a.name.toLowerCase();
-		b = b.name.toLowerCase();
-		if (a < b) {
-			return -1;
-		} else if (a > b) {
+		if (a.id.length > b.id.length) {
 			return 1;
+		} else if (a.id.length < b.id.length) {
+			return -1;
 		} else {
-			return 0;
+			if (a.id < b.id) {
+				return -1;
+			} else if (a.id > b.id) {
+				return 1;
+			} else {
+				return 0;
+			}
 		}
 	});
 
