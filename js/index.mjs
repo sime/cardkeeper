@@ -436,7 +436,7 @@ async function add_card() {
 				}
 			</style>
 		</svg>
-
+		<div class="capture-spacer"></div>
 		<p class="capture-status">Place barcode inside the area</p>
 	`, "capture");
 
@@ -513,5 +513,7 @@ async function add_card() {
 		card.save();
 		history.replaceState({}, '', `/edit-card/?id=${card.id}`);
 		edit_card();
+	} else {
+		history.back();
 	}
 }

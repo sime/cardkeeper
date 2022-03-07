@@ -411,13 +411,31 @@ div.install-prompt {
 }
 
 @media (min-width: 750px) {
+	.top-actions {
+		grid-column: 1 / 3;
+		justify-content: center;
+	}
+	.sc-btn {
+		display: none !important;
+	}
+	.capture-status {
+		grid-area: f;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 !important;
+	}
+	.capture-spacer {
+		width: 300px;
+		height: 300px;
+	}
 	div.install-prompt {
 		display: flex;
 	}
 	li.install-prompt {
 		display: none;
 	}
-	main {
+	main:not(.capture) {
 		display: grid;
 		grid-template:
 			"ha hb" max-content
@@ -425,6 +443,9 @@ div.install-prompt {
 			"f f" max-content / 1fr 1fr;
 		gap: 55px;
 		padding: 100px;
+	}
+	main.capture {
+		justify-content: center;
 	}
 	main > h1 {
 		grid-area: ha;
