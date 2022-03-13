@@ -5,8 +5,8 @@
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#fff",
-	"theme_color": "#4D94FF",
-	"description": "An app for storing your loyalty and membership cards so you can always have them with you.",
+	"theme_color": "#ffffff",
+	"description": "Store your loyalty and membership cards securely, works offline and no sign-up.",
 	"icons": [{
 		"src": "icons/home.svg",
 		"sizes": "any",
