@@ -266,27 +266,36 @@ function edit_card() {
 			on('click', pick_color)
 		]}>${text(use_later(t => t.data = card_colors[color()].name))}</button>
 		<div class="filler"></div>
-		<div class="btn-group">
-			<button class="icon-btn" ${on('click', () => {
-				if (window.confirm("Do you want to delete this card?")) {
-					card.delete();
-					history.back();
-				}
-			})}>
-				<img src="/assets/trash.svg">
-				</button>
-			<button ${on('click', () => {
-				card.color = color();
-				card.name = name();
-				card.save();
+	</div>
+	<div class="btn-group">
+		<button class="icon-btn" ${on('click', () => {
+			if (window.confirm("Do you want to delete this card?")) {
+				card.delete();
 				history.back();
-			})}>Save Card</button>
-		</div>
+			}
+		})}>
+			<img src="/assets/trash.svg">
+			</button>
+		<button ${on('click', () => {
+			card.color = color();
+			card.name = name();
+			card.save();
+			history.back();
+		})}>Save Card</button>
 	</div>`, 'edit-card');
 }
 function color_picker(initial_color_index) {
 	return new Promise(resolve => {
 		mount(html`
+			<button class="cancel-btn" ${on('click', () => {
+				resolve(initial_color_index);
+			}, {once: true})}>
+				<svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M15.8335 10.5L4.16683 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M10 16.3335L4.16667 10.5002L10 4.66683" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+				Cancel
+			</button>
 			<div class="color-preview" ${e => {
 				e.style.setProperty('--picker-color', card_colors[initial_color_index].value);
 			}}></div>
@@ -295,7 +304,12 @@ function color_picker(initial_color_index) {
 				${card_colors.map((c, i) => html`
 					<div>
 						<input id="${`checkbox-${c.name}`}" name="color_index" type="radio" ${e => {
-							if (i == initial_color_index) e.checked = true;
+							if (i == initial_color_index) {
+								e.checked = true;
+								e.addEventListener('click', 
+									() => resolve(initial_color_index),
+								{once: true});
+							}
 							e.value = i;
 						}}>
 						<label for="${`checkbox-${c.name}`}" ${e => e.style.setProperty('--picker-color', c.disp)}>

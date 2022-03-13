@@ -453,6 +453,15 @@ div.install-prompt {
 		padding-left: 0;
 		padding-right: 0;
 	}
+	.color-picker {
+		align-self: center;
+		display: flex;
+		flex-wrap: wrap;
+		max-width: 650px;
+	}
+	.color-picker label {
+		width: 140px;
+	}
 	main.list-view, main.edit-card {
 		display: grid;
 		grid-template:
@@ -466,21 +475,27 @@ div.install-prompt {
 		display: grid;
 		grid-template:
 			"h h" max-content
-			"l r" max-content / 1fr 1fr;
-		justify-content: center;
-	}
+			"l r" max-content 
+			"f f" max-content / max-content max-content;
+		
+	justify-content: center;align-content: center;}
 	main.edit-card .editor-container {
 		display: flex;
 		flex-direction: column;
 		grid-area: l;
-	}
+	gap: 1em;}
 	main.edit-card .cancel-btn {
 		grid-area: h;
 		justify-content: flex-start;
 	}
-	main:not(.list-view) {
-		justify-content: center;
+	main.edit-card .card-preview {
+		justify-self: center;
+	}
+	main.add-card {
 		gap: 95px;
+	}
+	main:not(.edit-card, .list-view) {
+		justify-content: center;
 		align-content: stretch;
 	}
 	main.view-card {
