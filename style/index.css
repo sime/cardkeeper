@@ -40,6 +40,9 @@ main {
 	font-weight: 700;
 	align-items: stretch;
 }
+main.onboarding {
+	justify-content: center;
+}
 
 button:not(#card-color, .cancel-btn) {
 	padding: .5em 2em;
