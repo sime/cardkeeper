@@ -50,7 +50,7 @@ button:not(#card-color, .cancel-btn) {
 	border-radius: 40px;
 	height: 60px;
 	padding: 16px;
-	width: unset;
+	/* width: unset; */
 	color: white;
 	align-items: center;
 	font-weight: bold;
@@ -193,8 +193,8 @@ p.perm-warning {
 .card-preview {
 	background: url(/assets/card-full.svg), var(--card-color, blue);
 	width: 343px;
-	background-blend-mode: screen;
-	height: 192px;
+	aspect-ratio: 343 / 192;background-blend-mode: screen;
+	/* height: 192px; */
 	border-radius: 16px;
 	display: flex;
 	flex-direction: column;
@@ -205,7 +205,7 @@ p.perm-warning {
 	color: white;
 	font-weight: bold;
 	text-overflow: ellipsis;
-	white-space: nowrap;
+	max-width: 100vmin;white-space: nowrap;
 }
 
 select, input[type="text"], button#card-color {
@@ -410,6 +410,9 @@ div.install-prompt {
     padding: unset !important;
     height: unset !important;
 }
+.editor-container {
+	display: contents;
+}
 
 @media (min-width: 750px) {
 	.top-actions {
@@ -420,6 +423,14 @@ div.install-prompt {
 	}
 	.sc-btn {
 		display: none !important;
+	}
+	.btn-group {
+		flex-direction: row-reverse;
+		justify-content: flex-end;
+	}
+	.btn-group button:last-of-type {
+		flex-grow: unset;
+		width: 15em
 	}
 	.capture-status {
 		grid-area: f;
@@ -442,7 +453,7 @@ div.install-prompt {
 		padding-left: 0;
 		padding-right: 0;
 	}
-	main.list-view {
+	main.list-view, main.edit-card {
 		display: grid;
 		grid-template:
 			"ha hb" max-content
@@ -450,6 +461,22 @@ div.install-prompt {
 			"f f" max-content / 1fr 1fr;
 		gap: 55px;
 		padding: 100px;
+	}
+	main.edit-card {
+		display: grid;
+		grid-template:
+			"h h" max-content
+			"l r" max-content / 1fr 1fr;
+		justify-content: center;
+	}
+	main.edit-card .editor-container {
+		display: flex;
+		flex-direction: column;
+		grid-area: l;
+	}
+	main.edit-card .cancel-btn {
+		grid-area: h;
+		justify-content: flex-start;
 	}
 	main:not(.list-view) {
 		justify-content: center;
@@ -478,7 +505,7 @@ div.install-prompt {
 	}
 }
 @media (min-width: 1400px) {
-	main {
+	main.list-view {
 		padding: 176px;
 	}
 	.card-list {

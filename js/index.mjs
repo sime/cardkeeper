@@ -227,7 +227,7 @@ function edit_card() {
 	async function pick_color() {
 		let t = save();
 		set_color(await color_picker(color()));
-		mount(t);
+		mount(t, 'edit-card');
 	}
 
 	mount(html`
@@ -249,38 +249,40 @@ function edit_card() {
 			${format_rawValue(card)}
 		</span>
 	</div>
-	<label for="card-name">Card Name:</label>
-	<input type="text" id="card-name" value="${name()}" placeholder="Name your card" ${[
-		on('change', ({target}) => set_name(target.value)),
-		e => {if (card.name == '') {
-			queueMicrotask(() => {
-				// We have to do this in a microtask because the template isn't attached to the dom yet.
-				e.focus();
-			})
-		}}
-	]}>
-	<label for="card-color">Card Colour:</label>
-	<button id="card-color" ${[
-		use_later(e => e.style.setProperty('--swatch-color', card_colors[color()].disp)),
-		on('click', pick_color)
-	]}>${text(use_later(t => t.data = card_colors[color()].name))}</button>
-	<div class="filler"></div>
-	<div class="btn-group">
-		<button class="icon-btn" ${on('click', () => {
-			if (window.confirm("Do you want to delete this card?")) {
-				card.delete();
+	<div class="editor-container">
+		<label for="card-name">Card Name:</label>
+		<input type="text" id="card-name" value="${name()}" placeholder="Name your card" ${[
+			on('change', ({target}) => set_name(target.value)),
+			e => {if (card.name == '') {
+				queueMicrotask(() => {
+					// We have to do this in a microtask because the template isn't attached to the dom yet.
+					e.focus();
+				})
+			}}
+		]}>
+		<label for="card-color">Card Colour:</label>
+		<button id="card-color" ${[
+			use_later(e => e.style.setProperty('--swatch-color', card_colors[color()].disp)),
+			on('click', pick_color)
+		]}>${text(use_later(t => t.data = card_colors[color()].name))}</button>
+		<div class="filler"></div>
+		<div class="btn-group">
+			<button class="icon-btn" ${on('click', () => {
+				if (window.confirm("Do you want to delete this card?")) {
+					card.delete();
+					history.back();
+				}
+			})}>
+				<img src="/assets/trash.svg">
+				</button>
+			<button ${on('click', () => {
+				card.color = color();
+				card.name = name();
+				card.save();
 				history.back();
-			}
-		})}>
-			<img src="/assets/trash.svg">
-			</button>
-		<button ${on('click', () => {
-			card.color = color();
-			card.name = name();
-			card.save();
-			history.back();
-		})}>Save Card</button>
-	</div>`);
+			})}>Save Card</button>
+		</div>
+	</div>`, 'edit-card');
 }
 function color_picker(initial_color_index) {
 	return new Promise(resolve => {
