@@ -2,7 +2,7 @@ import {mount, html, on} from './templating/index.mjs';
 
 export default function onboarding() {
 	return new Promise(resolve => {
-		let container_el, perm_warn_el;
+		let container_el, perm_warn_el, desktop_container;
 		mount(html`
 	<div id="onboard-container" ${e => {container_el = e}}>
 		<section>
@@ -44,21 +44,32 @@ export default function onboarding() {
 			</ul>
 		</section>
 	</div>
+	<div class="desktop-images" ${e => {desktop_container = e}}>
+		<img width="562" height="445" src="/assets/onboard1.svg" alt="">
+		<img width="562" height="445" src="/assets/onboard2.svg" alt="" style="opacity: 0">
+	</div>
 	<div class="doohicky" ${doohicky_el => {
 		const sec_map = new WeakMap();
+		const desk_map = new WeakMap();
 		const observer = new IntersectionObserver(entries => {
 			for (const {target, isIntersecting} of entries) {
 				const dh_el = sec_map.get(target);
+				const desk_img = desk_map.get(target);
 				if (isIntersecting) {
 					dh_el.classList.add('active');
+					desk_img.style.opacity = 1;
 				} else {
 					dh_el.classList.remove('active');
+					desk_img.style.opacity = 0;
 				}
 			}
 		}, { root: container_el, threshold: 0.5 });
-		for (const section of container_el.children) {
+		for (let i = 0; i < container_el.children.length; ++i) {
+			const section = container_el.children[i];
+			const desktop_image = desktop_container.children[i];
 			const dh_el = document.createElement('div');
 			sec_map.set(section, dh_el);
+			desk_map.set(section, desktop_image);
 			doohicky_el.appendChild(dh_el);
 			observer.observe(section);
 		}
@@ -77,7 +88,7 @@ export default function onboarding() {
 				}
 				next = !entry.isIntersecting;
 			}
-		}, { root: container_el }).observe(container_el.lastElementChild);
+		}, { root: container_el, threshold: 0.4 }).observe(container_el.lastElementChild);
 		on('click', () => {
 			if (next) {
 				container_el.scrollLeft += container_el.clientWidth;
@@ -92,6 +103,6 @@ export default function onboarding() {
 	<p class="perm-warning" ${e => {perm_warn_el = e}}>
 		<img width="16" height="16" src="/assets/camera.svg">
 		This will require camera access
-	</p>`);
+	</p>`, 'onboarding');
 	});
 }

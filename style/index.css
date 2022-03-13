@@ -413,6 +413,15 @@ div.install-prompt {
 .editor-container {
 	display: contents;
 }
+.desktop-images {
+	display: none;
+	grid-area: b;
+	grid-template: "a" max-content / max-content;
+}
+.desktop-images > * {
+	grid-area: a;
+	transition: opacity 0.5s;
+}
 
 @media (min-width: 750px) {
 	.top-actions {
@@ -517,6 +526,42 @@ div.install-prompt {
 		grid-auto-rows: max-content;
 		grid-auto-flow: row;
 		gap: 55px;
+	}
+}
+@media (min-width: 1050px) {
+	main.onboarding {
+		display: grid;
+		grid-template:
+			"a b" max-content
+			"c b" max-content
+			"d b" max-content 
+			"e b" max-content / min-content min-content;
+		gap: 1em;
+		padding: 50px;
+		align-items: center;
+		align-content: center;
+		justify-content: center;
+	}
+	main.onboarding .desktop-images {
+		display: grid;
+	}
+	main.onboarding .doohicky {
+		grid-area: d;
+		justify-content: start;
+	}
+	main.onboarding section > img {
+		display: none;
+	}
+	main.onboarding section ul {
+		display: grid;
+		gap: 1em;
+		grid-template: max-content / 1fr 1fr;
+	}
+	main.onboarding section {
+		margin: 0 !important;
+	}
+	main.onboarding button {
+		width: 300px;
 	}
 }
 @media (min-width: 1400px) {
