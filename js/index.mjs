@@ -177,6 +177,9 @@ function list_cards() {
 			});
 		}
 		mount(html`
+			<a class="about-icon" href="/about.html">
+				<img src="/assets/info-icon.svg">
+			</a>
 			<h1>Card Keeper</h1>
 			<ul class="card-list" ${on('click', ({target}) => {
 				const card_id = target.closest('li')?.dataset['cardid'];

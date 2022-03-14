@@ -2,6 +2,12 @@
 	font-family: "DM Sans";
 	src: url("/assets/DMSans-Regular.ttf");
 }
+.about-icon {
+	position: absolute;
+	right: 0;
+	top: 0;
+	padding: 1em;
+}
 html, body {
 	font-family: "DM Sans", sans-serif;
 	margin: 0;

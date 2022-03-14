@@ -1,9 +1,10 @@
 // This service worker will never refetch assets once it's installed the first time.  This means that in order for the app to update, the service worker must change and recache the assets.  Changing this verions number will do that.
-const version = "0.8"
+const version = "0.9"
 const static_cache_name = 'static_assets-' + version;
 
 const offline_assets = [
 	'/',
+	'/about.html',
 	'/add-card/',
 	'/edit-card/',
 	'/view-card/',
@@ -19,6 +20,7 @@ const offline_assets = [
 	'assets/flip-camera-icon.svg',
 	'assets/grocery-icon.svg',
 	'assets/gym-icon.svg',
+	'assets/info-icon.svg',
 	'assets/install-icon.svg',
 	'assets/install-prompt-background.svg',
 	'assets/library-icon.svg',

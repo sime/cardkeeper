@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Card Keeper - Safely keep all your membership cards in one place</title>
+		<meta name="description" content="Store your loyalty and membership cards securely, works offline and no sign-up.">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<link rel="manifest" href="manifest.json">
+		<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+		<meta name="theme-color" content="#ffffff">
+		<link rel="apple-touch-icon" href="/icons/home-192.png">
+
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:creator" content="@simonmales" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://cardkeeper.org/" />
+		<meta property="og:title" content="Card Keeper" />
+		<meta property="og:description" content="Safely keep all your membership cards in one place" />
+		<meta property="og:image" content="https://cardkeeper.org/icons/home-192.png" />
+
+		<base href="/">
+
+		<link rel="stylesheet" href="style/index.css">
+		<style>
+			main {
+				display: flex;
+				margin: 0 auto;
+				max-width: 500px;
+				justify-content: center;
+				align-content: center;
+			}
+			section {
+				display: flex;
+				flex-direction: column;
+			}
+			@media (min-width: 800px) {
+				main {
+					max-width: 1300px;
+				}
+				section:nth-of-type(2n) {
+					flex-direction: row-reverse;
+				}
+				section:nth-of-type(2n + 1) {
+					flex-direction: row;
+				}
+			}
+			ul {
+				padding: 0;
+			}
+			li {
+				list-style: none;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<section>
+				<img width="314" height="272" src="/assets/onboard1.svg" alt="">
+				<div>
+					<h1>Card Keeper</h1>
+					<p>Keep all your membership cards in one place. You can store your:</p>
+					<ul>
+						<li>
+							<img width="30" height="30" src="/assets/coffee-icon.svg">
+							Local Coffee Shop Card
+						</li>
+						<li>
+							<img width="30" height="30" src="/assets/gym-icon.svg">
+							Gym Card
+						</li>
+						<li>
+							<img width="30" height="30" src="/assets/library-icon.svg">
+							Library Card
+						</li>
+						<li>
+							<img width="30" height="30" src="/assets/grocery-icon.svg">
+							Supermarket Reward Card
+						</li>
+					</ul>
+				</div>
+			</section>
+			<section>
+				<img width="314" height="272" src="/assets/onboard2.svg" alt="">
+				<div>
+					<h1>Safe and Secure</h1>
+					<p>Protects your privacy at the same time, so you feel more secured</p>
+					<ul>
+						<li>
+							<img width="30" height="30" src="/assets/offline-icon.svg">
+							Works Offline
+						</li>
+						<li>
+							<img width="30" height="30" src="/assets/device-icon.svg">
+							All data stored in your device
+						</li>
+					</ul>
+				</div>
+			</section>
+			<section style="flex-direction: column; margin-top: 3em;">
+				<h1>Fully Open Source!</h1>
+				<p>Feel free to browse the code or submit a patch on <a href="https://github.com/sime/cardkeeper">Github</a>.</p>
+			</section>
+		</main>
+	</body>
+</html>
