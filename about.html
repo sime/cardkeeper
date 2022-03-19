@@ -50,11 +50,28 @@
 			}
 			li {
 				list-style: none;
+				display: flex;
+				align-items: center;
+				gap: 0.5em;
+				margin: 0.5em;
+			}
+			.try-link {
+				display: inline-block;
+				text-decoration: none;
+				color: white;
+				background: black;
+				border-radius: 1em;
+				padding: 1em 3em;
+				align-self: flex-start;
+			}
+			.tri-link::before {
+				content: "←";
 			}
 		</style>
 	</head>
 	<body>
 		<main>
+			<a class="try-link" href="/">Try it out!</a>
 			<section>
 				<img width="314" height="272" src="/assets/onboard1.svg" alt="">
 				<div>
