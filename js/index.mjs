@@ -409,6 +409,15 @@ async function add_card() {
 	let deviceId = '';
 
 	const video = document.createElement('video');
+	video.setAttribute('autoplay', '');
+	video.setAttribute('muted', 'true');
+	video.setAttribute('playsinline', '');
+	video.addEventListener('click', async e => {
+		e.preventDefault();
+		if (video.paused) {
+			await video.play();
+		}
+	});
 	video.classList.add('image-capture');
 
 	const detector = ('BarcodeDetector' in window) ? new BarcodeDetector() : new ZXBarcodeDetector();
@@ -496,7 +505,11 @@ async function add_card() {
 				}
 	
 				video.srcObject = stream;
-				await video.play();
+				try {
+					await video.play();
+				} catch (e) {
+					// I guess that iOS Safari doesn't consider allowing camera access to be a user gesture maybe?
+				}
 	
 				// Set the camera's properties (width / height) to the canvas
 				// MAYBE: Get the width / height from the video element?
