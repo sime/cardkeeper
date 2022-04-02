@@ -16,6 +16,16 @@ html, body {
 	height: 100%;
 	font-size: 14px;
 	font-weight: 700;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.card-value {
+	-webkit-user-select: all;
+	-moz-user-select: all;
+	-ms-user-select: all;
+	user-select: all;
 }
 h1, h2, h3, h4, h5, h6 {
 	margin: unset;
