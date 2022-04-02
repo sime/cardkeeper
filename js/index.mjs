@@ -151,11 +151,11 @@ function list_cards() {
 			return use_later(e => {
 				if (backoff_is_up() && cards.length >= 2 && installPromptEvent()) {
 					e.replaceWith(wrapper);
-					e.addEventListener('click', async () => {
+					wrapper.addEventListener('click', async () => {
 						installPromptEvent().prompt();
 						set_installPromptEvent(false);
 						update_backoff(await installPromptEvent.userChoice);
-						e.remove();
+						wrapper.remove();
 					});
 					wrapper.appendChild(html`<img src="/assets/install-icon.svg">
 					Add App to Homescreen
